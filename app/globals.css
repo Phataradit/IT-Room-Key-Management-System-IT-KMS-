@@ -1003,6 +1003,31 @@ a {
   font-size: 12px;
 }
 
+.scanner-capture-button {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 0 18px;
+  border-radius: 7px;
+  background: #245ca6;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.scanner-capture-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
 .scanner-privacy {
   margin: 12px 0 0;
   color: #91a0ae;

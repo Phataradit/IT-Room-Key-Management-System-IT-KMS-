@@ -14,7 +14,7 @@ export default async function ScanPage() {
           <div>
             <p className="eyebrow">สแกนเพื่อดูข้อมูลห้อง</p>
             <h1>สแกน QR Code</h1>
-            <p className="welcome-subtitle">อนุญาตให้เว็บไซต์ใช้กล้อง แล้วหันกล้องไปที่ QR Code ของห้อง</p>
+            <p className="welcome-subtitle">สแกน QR Code ของห้อง หรือถ่ายภาพ QR เพื่อเปิดจากมือถือ</p>
           </div>
         </div>
         <QrScanner />
