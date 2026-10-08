@@ -1,0 +1,72 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { BrowserMultiFormatReader } from "@zxing/browser";
+import type { IScannerControls } from "@zxing/browser";
+
+function readRoomToken(value: string) {
+  try {
+    const url = new URL(value, window.location.origin);
+    const segments = url.pathname.split("/").filter(Boolean);
+    if (segments.length >= 2 && segments.at(-2) === "scan") return segments.at(-1) ?? null;
+  } catch {
+    return null;
+  }
+
+  return /^[A-Za-z0-9_-]{24,}$/.test(value) ? value : null;
+}
+
+export function QrScanner() {
+  const router = useRouter();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [error, setError] = useState("");
+  const [isStarting, setIsStarting] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    let controls: IScannerControls | undefined;
+    const reader = new BrowserMultiFormatReader();
+
+    reader.decodeFromVideoDevice(undefined, videoRef.current ?? undefined, (result, _decodeError, scannerControls) => {
+      controls = scannerControls;
+      if (!active || !result) return;
+
+      const token = readRoomToken(result.getText());
+      if (!token) {
+        setError("QR Code นี้ไม่ใช่รหัสห้อง IT-KMS กรุณาลองอีกครั้ง");
+        return;
+      }
+
+      active = false;
+      scannerControls.stop();
+      router.push(`/scan/${encodeURIComponent(token)}`);
+    }).then((scannerControls) => {
+      controls = scannerControls;
+      if (active) setIsStarting(false);
+      else scannerControls.stop();
+    }).catch((cause: unknown) => {
+      if (!active) return;
+      setIsStarting(false);
+      setError(cause instanceof Error ? `เปิดกล้องไม่สำเร็จ: ${cause.message}` : "เปิดกล้องไม่สำเร็จ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง");
+    });
+
+    return () => {
+      active = false;
+      controls?.stop();
+    };
+  }, [router]);
+
+  return (
+    <section className="scanner-card">
+      <div className="scanner-frame">
+        <video ref={videoRef} className="scanner-video" muted playsInline aria-label="ภาพจากกล้องสำหรับสแกน QR" />
+        <div className="scanner-target" aria-hidden="true"><span /></div>
+        {isStarting && <div className="scanner-overlay">กำลังเปิดกล้อง...</div>}
+      </div>
+      <p className="scanner-instruction">วาง QR Code ให้อยู่ในกรอบเพื่อสแกนอัตโนมัติ</p>
+      {error && <p className="scanner-error" role="alert">{error}</p>}
+      <p className="scanner-privacy">กล้องทำงานบนอุปกรณ์ของคุณ ภาพไม่ได้ถูกบันทึกหรือส่งไปที่อื่น</p>
+    </section>
+  );
+}

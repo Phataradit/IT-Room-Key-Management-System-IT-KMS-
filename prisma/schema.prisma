@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SCHOOL_STUDENT
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum RoomType {
+  COMPUTER_LAB
+  CLASSROOM
+  SERVER_ROOM
+  STORAGE_ROOM
+  OFFICE
+  OTHER
+}
+
+enum RoomStatus {
+  AVAILABLE
+  BORROWED
+  MAINTENANCE
+  DISABLED
+}
+
+enum KeyStatus {
+  AVAILABLE
+  BORROWED
+  LOST
+  DAMAGED
+  DISABLED
+}
+
+enum KeyCondition {
+  GOOD
+  FAIR
+  DAMAGED
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum ScheduleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BorrowStatus {
+  PENDING
+  BORROWED
+  RETURNED
+  OVERDUE
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  USING
+  RETURNED
+  CANCELLED
+  REJECTED
+}
+
+enum NotificationType {
+  BORROW_SUCCESS
+  RETURN_SUCCESS
+  DUE_SOON
+  OVERDUE
+  SYSTEM
+}
+
+model User {
+  id               String              @id @default(cuid())
+  username         String              @unique
+  email            String              @unique
+  passwordHash     String
+  prefix           String?
+  firstName        String
+  lastName         String
+  studentId        String?             @unique
+  employeeId       String?             @unique
+  phone            String?
+  role             UserRole            @default(STUDENT)
+  department       String?
+  classRoom        String?
+  avatarUrl        String?
+  status           UserStatus          @default(ACTIVE)
+  lastLoginAt      DateTime?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  deletedAt        DateTime?
+  borrows          BorrowTransaction[] @relation("Borrower")
+  approvals        BorrowTransaction[] @relation("Approver")
+  roomBookings     RoomBooking[]       @relation("BookingOwner")
+  approvedBookings RoomBooking[]       @relation("BookingApprover")
+  rejectedBookings RoomBooking[]       @relation("BookingRejecter")
+  returnedBookings RoomBooking[]       @relation("BookingReturnConfirmer")
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  responsibleRooms RoomTeacher[]
+
+  @@index([role, status])
+  @@index([lastName, firstName])
+}
+
+model Room {
+  id            String              @id @default(cuid())
+  roomCode      String              @unique
+  roomName      String
+  building      String
+  floor         String
+  roomType      RoomType
+  description   String?
+  capacity      Int?
+  status        RoomStatus          @default(AVAILABLE)
+  qrToken       String?             @unique
+  qrVersion     Int                 @default(1)
+  qrGeneratedAt DateTime?
+  qrRevokedAt   DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  deletedAt     DateTime?
+  keys          RoomKey[]
+  schedules     RoomSchedule[]
+  borrows       BorrowTransaction[]
+  bookings      RoomBooking[]
+  teachers      RoomTeacher[]
+
+  @@index([status, roomType])
+  @@index([building, floor])
+}
+
+model RoomTeacher {
+  roomId    String
+  teacherId String
+  createdAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, teacherId])
+  @@index([teacherId])
+}
+
+model RoomKey {
+  id          String       @id @default(cuid())
+  roomId      String
+  keyCode     String       @unique
+  keyName     String
+  status      KeyStatus    @default(AVAILABLE)
+  condition   KeyCondition @default(GOOD)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  room        Room         @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  borrowItems BorrowItem[]
+
+  @@index([roomId, status])
+}
+
+model RoomSchedule {
+  id           String         @id @default(cuid())
+  roomId       String
+  dayOfWeek    DayOfWeek
+  startTime    String
+  endTime      String
+  subject      String
+  teacherName  String
+  className    String
+  semester     String
+  academicYear String
+  status       ScheduleStatus @default(ACTIVE)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  room         Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId, dayOfWeek, status])
+  @@index([academicYear, semester])
+}
+
+model BorrowTransaction {
+  id               String       @id @default(cuid())
+  transactionNo    String       @unique
+  userId           String
+  roomId           String
+  borrowedAt       DateTime     @default(now())
+  expectedReturnAt DateTime
+  returnedAt       DateTime?
+  status           BorrowStatus @default(BORROWED)
+  purpose          String
+  note             String?
+  approvedById     String?
+  approvedAt       DateTime?
+  returnNote       String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  user             User         @relation("Borrower", fields: [userId], references: [id], onDelete: Restrict)
+  room             Room         @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  approvedBy       User?        @relation("Approver", fields: [approvedById], references: [id], onDelete: SetNull)
+  items            BorrowItem[]
+
+  @@index([userId, borrowedAt])
+  @@index([roomId, borrowedAt])
+  @@index([status, expectedReturnAt])
+  @@index([returnedAt])
+}
+
+model BorrowItem {
+  id              String            @id @default(cuid())
+  transactionId   String
+  keyId           String
+  quantity        Int               @default(1)
+  conditionBefore KeyCondition
+  conditionAfter  KeyCondition?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  transaction     BorrowTransaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  key             RoomKey           @relation(fields: [keyId], references: [id], onDelete: Restrict)
+
+  @@unique([transactionId, keyId])
+  @@index([keyId])
+}
+
+model RoomBooking {
+  id                String        @id @default(cuid())
+  bookingNo         String        @unique
+  userId            String
+  roomId            String
+  startsAt          DateTime
+  endsAt            DateTime
+  status            BookingStatus @default(PENDING)
+  purpose           String
+  attendeeCount     Int
+  note              String?
+  approvedById      String?
+  approvedAt        DateTime?
+  rejectedById      String?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  startedAt         DateTime?
+  returnedAt        DateTime?
+  returnNote        String?
+  returnedById      String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  user              User          @relation("BookingOwner", fields: [userId], references: [id], onDelete: Restrict)
+  room              Room          @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  approvedBy        User?         @relation("BookingApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy        User?         @relation("BookingRejecter", fields: [rejectedById], references: [id], onDelete: SetNull)
+  returnedBy        User?         @relation("BookingReturnConfirmer", fields: [returnedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, startsAt])
+  @@index([roomId, status, startsAt, endsAt])
+  @@index([status, startsAt])
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  message     String
+  referenceId String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+}
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([entity, entityId, createdAt])
+  @@index([action, createdAt])
+}
