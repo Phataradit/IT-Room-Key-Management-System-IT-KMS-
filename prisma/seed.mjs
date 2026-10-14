@@ -138,29 +138,7 @@ async function main() {
     });
   }
 
-  const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
   const subjects = ["Database Systems", "Web Programming", "Network Fundamentals", "IT Project"];
-  const scheduleCount = await prisma.roomSchedule.count();
-  if (scheduleCount === 0) {
-    for (let index = 0; index < 20; index += 1) {
-      const room = rooms[index % rooms.length];
-      const startHour = 8 + (index % 4) * 2;
-      await prisma.roomSchedule.create({
-        data: {
-          roomId: room.id,
-          dayOfWeek: days[index % days.length],
-          startTime: `${String(startHour).padStart(2, "0")}:00`,
-          endTime: `${String(startHour + 2).padStart(2, "0")}:00`,
-          subject: subjects[index % subjects.length],
-          teacherName: "สมชาย ใจดี",
-          className: `ปวช. ${1 + (index % 3)}/1`,
-          semester: "1",
-          academicYear: "2569",
-        },
-      });
-    }
-  }
-
   const borrowCount = await prisma.borrowTransaction.count();
   if (borrowCount === 0) {
     const now = new Date();

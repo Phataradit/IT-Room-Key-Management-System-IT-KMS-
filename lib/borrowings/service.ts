@@ -122,6 +122,14 @@ async function validateRoomAndAvailability(
     ) AS days(booking_day)
     WHERE s."roomId" = ${room.id}
       AND s."status" = 'ACTIVE'
+      AND (s."effectiveFrom" IS NULL OR s."effectiveFrom" <= booking_day::date)
+      AND (s."effectiveTo" IS NULL OR s."effectiveTo" >= booking_day::date)
+      AND NOT EXISTS (
+        SELECT 1
+        FROM "RoomScheduleException" x
+        WHERE x."scheduleId" = s."id"
+          AND x."date" = booking_day::date
+      )
       AND s."dayOfWeek"::text = CASE EXTRACT(DOW FROM booking_day)::integer
         WHEN 0 THEN 'SUNDAY'
         WHEN 1 THEN 'MONDAY'

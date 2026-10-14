@@ -3,12 +3,13 @@
 import Link from "next/link";
 import {
   AppstoreOutlined,
-  BellOutlined,
+  CalendarOutlined,
   ClockCircleOutlined,
   HomeOutlined,
   FileTextOutlined,
   QrcodeOutlined,
 } from "@ant-design/icons";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SignOutButton } from "@/components/layout/sign-out-button";
 
 type DashboardShellProps = {
@@ -21,6 +22,7 @@ type DashboardShellProps = {
 const navigation = [
   { href: "/dashboard", label: "หน้าหลัก", icon: <HomeOutlined />, key: "dashboard" },
   { href: "/rooms", label: "ห้องทั้งหมด", icon: <AppstoreOutlined />, key: "rooms" },
+  { href: "/room-timetable", label: "ตารางประจำห้อง", icon: <CalendarOutlined />, key: "room-timetable" },
   { href: "/scan", label: "สแกน QR", icon: <QrcodeOutlined />, key: "scan" },
   { href: "/borrowings", label: "ยืม-คืนห้อง", icon: <FileTextOutlined />, key: "borrowings" },
   { href: "/history", label: "ประวัติการยืม", icon: <ClockCircleOutlined />, key: "history" },
@@ -53,7 +55,7 @@ export function DashboardShell({ children, userName, roleLabel, active }: Dashbo
         <header className="topbar">
           <div className="breadcrumb">ระบบจัดการกุญแจ <span>/</span> หน้าหลัก</div>
           <div className="topbar-actions">
-            <span className="icon-button" aria-label="การแจ้งเตือน"><BellOutlined /><i /></span>
+            <NotificationBell />
             <div className="topbar-divider" />
             <div className="user-menu">
               <div className="avatar">{userName.charAt(0)}</div>
@@ -66,6 +68,7 @@ export function DashboardShell({ children, userName, roleLabel, active }: Dashbo
         <nav className="mobile-nav" aria-label="เมนูมือถือ">
           <Link href="/dashboard" className={active === "dashboard" ? "active" : ""}><HomeOutlined /><span>หน้าหลัก</span></Link>
           <Link href="/rooms" className={active === "rooms" ? "active" : ""}><AppstoreOutlined /><span>ห้อง</span></Link>
+          <Link href="/room-timetable" className={active === "room-timetable" ? "active" : ""}><CalendarOutlined /><span>ตาราง</span></Link>
           <Link href="/scan" className="mobile-scan"><QrcodeOutlined /><span>สแกน</span></Link>
           <Link href="/borrowings" className={active === "borrowings" ? "active" : ""}><FileTextOutlined /><span>จอง</span></Link>
           <Link href="/history" className={active === "history" ? "active" : ""}><ClockCircleOutlined /><span>ประวัติ</span></Link>

@@ -1,11 +1,13 @@
 import "server-only";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import type { UserRole } from "@prisma/client";
 import { authOptions } from "@/lib/auth/options";
 import { prisma } from "@/lib/db/prisma";
 
 export async function requireUser() {
+  await connection();
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login");
 

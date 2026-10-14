@@ -88,6 +88,16 @@ enum NotificationType {
   DUE_SOON
   OVERDUE
   SYSTEM
+  ROOM_ENDING_SOON
+  ROOM_USAGE_ENDED
+  ROOM_USAGE_OVERDUE
+  SCHEDULE_CHANGED
+}
+
+enum NotificationPriority {
+  NORMAL
+  WARNING
+  CRITICAL
 }
 
 model User {
@@ -119,6 +129,7 @@ model User {
   notifications    Notification[]
   auditLogs        AuditLog[]
   responsibleRooms RoomTeacher[]
+  taughtSchedules  RoomSchedule[]      @relation("ScheduleTeacher")
 
   @@index([role, status])
   @@index([lastName, firstName])
@@ -180,21 +191,42 @@ model RoomKey {
 model RoomSchedule {
   id           String         @id @default(cuid())
   roomId       String
+  teacherId    String?
   dayOfWeek    DayOfWeek
   startTime    String
   endTime      String
+  courseCode   String?
   subject      String
   teacherName  String
   className    String
   semester     String
   academicYear String
+  effectiveFrom DateTime?     @db.Date
+  effectiveTo   DateTime?     @db.Date
+  notes         String?
   status       ScheduleStatus @default(ACTIVE)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   room         Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  teacher      User?          @relation("ScheduleTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  exceptions   RoomScheduleException[]
 
   @@index([roomId, dayOfWeek, status])
   @@index([academicYear, semester])
+  @@index([teacherId, status])
+  @@index([effectiveFrom, effectiveTo])
+}
+
+model RoomScheduleException {
+  id         String       @id @default(cuid())
+  scheduleId String
+  date       DateTime     @db.Date
+  reason     String?
+  createdAt  DateTime     @default(now())
+  schedule   RoomSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleId, date])
+  @@index([date])
 }
 
 model BorrowTransaction {
@@ -274,15 +306,18 @@ model RoomBooking {
 }
 
 model Notification {
-  id          String           @id @default(cuid())
+  id          String               @id @default(cuid())
   userId      String
   type        NotificationType
+  priority    NotificationPriority @default(NORMAL)
   title       String
   message     String
   referenceId String?
-  isRead      Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  actionUrl   String?
+  dedupeKey   String?              @unique
+  isRead      Boolean              @default(false)
+  createdAt   DateTime             @default(now())
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
 }

@@ -1547,3 +1547,550 @@ a {
     font-size: 19px;
   }
 }
+
+.notification-bell-button {
+  color: #65768a;
+}
+
+.notification-bell-button .ant-badge {
+  line-height: 1;
+}
+
+.notification-popover {
+  width: min(390px, calc(100vw - 34px));
+}
+
+.notification-popover-heading,
+.notification-view-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notification-popover-heading {
+  padding: 2px 4px 8px;
+}
+
+.notification-popover-item {
+  cursor: pointer;
+}
+
+.notification-popover-item.unread {
+  background: #f2f7ff;
+}
+
+.notification-message {
+  max-width: 285px;
+  margin: 3px 0 !important;
+  font-size: 12px;
+}
+
+.notification-date {
+  font-size: 10px;
+}
+
+.notification-view-all {
+  justify-content: center;
+  padding: 10px 4px 2px;
+  color: #2865ba;
+  font-size: 12px;
+}
+
+.room-timetable-page {
+  max-width: 1480px;
+}
+
+.room-timetable-heading h1 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.room-timetable-heading > .ant-space {
+  flex-shrink: 0;
+}
+
+.room-timetable-filters,
+.room-timetable-list-card,
+.notification-list-card,
+.notification-settings-card {
+  margin-bottom: 16px;
+  border: 1px solid #e6ebf2;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgb(28 51 77 / 3%);
+}
+
+.timetable-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.timetable-filter-grid > .ant-input,
+.timetable-filter-grid > .ant-select {
+  min-width: 0;
+}
+
+.timetable-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.timetable-week-scroll {
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.timetable-week-grid {
+  display: grid;
+  min-width: 1190px;
+  grid-template-columns: 64px repeat(7, minmax(160px, 1fr));
+}
+
+.timetable-time-header,
+.timetable-day-header {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  display: flex;
+  min-height: 56px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #465c72;
+  font-size: 11px;
+  text-align: center;
+}
+
+.timetable-time-header {
+  left: 0;
+  z-index: 2;
+}
+
+.timetable-day-header {
+  border-left: 1px solid #e2e8f0;
+}
+
+.timetable-day-header span {
+  margin-top: 3px;
+  color: #8190a0;
+  font-size: 10px;
+}
+
+.timetable-time-axis,
+.timetable-day-column {
+  position: relative;
+  background-color: #fff;
+}
+
+.timetable-time-axis {
+  position: sticky;
+  z-index: 1;
+  left: 0;
+  border-right: 1px solid #e2e8f0;
+}
+
+.timetable-time-axis span {
+  position: absolute;
+  right: 7px;
+  color: #8795a4;
+  font-size: 9px;
+  transform: translateY(-50%);
+}
+
+.timetable-day-column {
+  border-right: 1px solid #e7ecf2;
+  background-image: linear-gradient(to bottom, transparent 59px, #e8edf3 60px);
+  background-size: 100% 60px;
+}
+
+.timetable-hour-line {
+  position: absolute;
+  right: 0;
+  left: 0;
+  border-top: 1px solid #edf0f4;
+  pointer-events: none;
+}
+
+.timetable-event {
+  position: absolute;
+  z-index: 1;
+  overflow: hidden;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 5px 6px;
+  border: 1px solid #c8d9f3;
+  border-left: 3px solid #3472c4;
+  border-radius: 5px;
+  background: #edf4ff;
+  color: #294968;
+  cursor: pointer;
+  font-size: 9px;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.timetable-event strong,
+.timetable-event span {
+  overflow: hidden;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
+.timetable-event strong {
+  font-size: 10px;
+}
+
+.timetable-event.booking-event {
+  border-color: #ddcafa;
+  border-left-color: #8050b4;
+  background: #f6efff;
+  color: #553779;
+}
+
+.timetable-event.conflict-event {
+  border-color: #ee9a8c;
+  border-left-color: #c4382b;
+  background: #fff1ef;
+  color: #8c281e;
+}
+
+.timetable-class-grid {
+  width: 100%;
+  min-width: 1320px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  color: #354b61;
+  font-size: 11px;
+}
+
+.timetable-class-grid th,
+.timetable-class-grid td {
+  padding: 6px;
+  border: 1px solid #e1e7ef;
+  vertical-align: top;
+}
+
+.timetable-class-grid thead th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  height: 48px;
+  background: #f0f5fb;
+  text-align: center;
+}
+
+.timetable-class-grid thead th:first-child,
+.timetable-class-grid tbody th {
+  width: 92px;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.timetable-class-grid thead th span,
+.timetable-class-grid tbody th span {
+  display: block;
+  margin-top: 4px;
+  color: #738397;
+  font-size: 9px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.timetable-class-grid tbody td {
+  height: 76px;
+  background: #fff;
+}
+
+.timetable-cell-entry {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin: 0 0 4px;
+  padding: 5px;
+  border: 1px solid #c8d9f3;
+  border-left: 3px solid #3472c4;
+  border-radius: 5px;
+  background: #edf4ff;
+  color: #294968;
+  cursor: pointer;
+  font-size: 9px;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.timetable-cell-entry strong,
+.timetable-cell-entry span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.timetable-cell-subject {
+  font-weight: 600;
+}
+
+.timetable-cell-entry.booking-event {
+  border-color: #ddcafa;
+  border-left-color: #8050b4;
+  background: #f6efff;
+  color: #553779;
+}
+
+.timetable-cell-entry.conflict-event {
+  border-color: #ee9a8c;
+  border-left-color: #c4382b;
+  background: #fff1ef;
+  color: #8c281e;
+}
+
+.timetable-empty-cell {
+  display: block;
+  padding-top: 12px;
+  color: #bdc6d0;
+  text-align: center;
+}
+
+.room-timetable-secondary {
+  margin-top: 3px;
+  color: #7e8d9c;
+  font-size: 11px;
+}
+
+.schedule-form-help {
+  margin-bottom: 16px;
+}
+
+.schedule-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 14px;
+}
+
+.exception-form {
+  width: 100%;
+}
+
+.exception-form .ant-input {
+  width: min(100%, 400px);
+}
+
+.exception-list {
+  margin-top: 15px;
+}
+
+.timetable-mobile-day {
+  display: none;
+}
+
+.notification-settings-card {
+  margin-bottom: 16px;
+}
+
+.notification-settings-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.notification-settings-form label {
+  display: flex;
+  min-width: 190px;
+  flex-direction: column;
+  gap: 6px;
+  color: #52677b;
+  font-size: 12px;
+}
+
+.notification-filters {
+  margin-bottom: 14px;
+}
+
+.notification-center-page .welcome-row {
+  align-items: center;
+}
+
+@media (max-width: 980px) {
+  .timetable-filter-grid {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .timetable-week-scroll {
+    display: none;
+  }
+
+  .timetable-mobile-day {
+    display: block;
+  }
+
+  .timetable-mobile-day > .ant-select {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .timetable-mobile-event {
+    width: 100%;
+  }
+
+  .room-timetable-heading {
+    flex-direction: column;
+  }
+
+  .room-timetable-heading > .ant-space {
+    width: 100%;
+  }
+
+  .room-timetable-heading > .ant-space .ant-btn {
+    flex: 1;
+  }
+
+  .notification-center-page .welcome-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .timetable-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timetable-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .schedule-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .notification-settings-form,
+  .notification-settings-form label {
+    width: 100%;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .sidebar,
+  .topbar,
+  .mobile-nav,
+  .room-timetable-filters,
+  .room-timetable-heading > .ant-space,
+  .timetable-mobile-day,
+  .room-timetable-list-card .ant-table-pagination,
+  .notification-center-page {
+    display: none !important;
+  }
+
+  .main-column {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .room-timetable-page {
+    width: 100%;
+    max-width: none;
+    padding: 0 !important;
+  }
+
+  .room-timetable-heading {
+    margin-bottom: 10px;
+  }
+
+  .timetable-week-scroll {
+    display: block !important;
+    overflow: visible;
+    border: 1px solid #aeb8c3;
+  }
+
+  .timetable-week-grid {
+    min-width: 0;
+    grid-template-columns: 42px repeat(7, minmax(0, 1fr));
+  }
+
+  .timetable-day-header,
+  .timetable-time-header {
+    position: static;
+    min-height: 34px;
+    padding: 3px;
+    font-size: 8px;
+  }
+
+  .timetable-day-header span,
+  .timetable-time-axis span {
+    font-size: 7px;
+  }
+
+  .timetable-event {
+    padding: 2px;
+    font-size: 6px;
+    print-color-adjust: exact;
+  }
+
+  .timetable-event strong {
+    font-size: 7px;
+  }
+
+  .timetable-class-grid {
+    min-width: 0;
+    font-size: 6px;
+  }
+
+  .timetable-class-grid th,
+  .timetable-class-grid td {
+    padding: 2px;
+  }
+
+  .timetable-class-grid thead th {
+    position: static;
+    height: 28px;
+  }
+
+  .timetable-class-grid thead th:first-child,
+  .timetable-class-grid tbody th {
+    width: 30px;
+  }
+
+  .timetable-class-grid thead th span,
+  .timetable-class-grid tbody th span {
+    font-size: 5px;
+  }
+
+  .timetable-class-grid tbody td {
+    height: 40px;
+  }
+
+  .timetable-cell-entry {
+    gap: 1px;
+    padding: 2px;
+    font-size: 5px;
+    print-color-adjust: exact;
+  }
+
+  .timetable-empty-cell {
+    padding-top: 5px;
+  }
+}
