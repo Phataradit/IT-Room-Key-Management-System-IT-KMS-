@@ -8,10 +8,14 @@ const demoPasswordHashes = {
   admin: passwordHash,
   teacher: await bcrypt.hash("Teacher123!", 12),
   student: await bcrypt.hash("Student123!", 12),
-  schoolStudent: await bcrypt.hash("SchoolStudent123!", 12),
 };
 
 async function main() {
+  await prisma.user.updateMany({
+    where: { username: "schoolstudent", deletedAt: null },
+    data: { status: "INACTIVE", deletedAt: new Date() },
+  });
+
   const admin = await prisma.user.upsert({
     where: { username: "admin" },
     update: {},
@@ -51,21 +55,6 @@ async function main() {
       lastName: "นักเรียน",
       studentId: "S-0001",
       classRoom: "ปวช. 3/1",
-      role: "STUDENT",
-    },
-  });
-
-  await prisma.user.upsert({
-    where: { username: "schoolstudent" },
-    update: {},
-    create: {
-      username: "schoolstudent",
-      email: "schoolstudent@itkms.local",
-      passwordHash: demoPasswordHashes.schoolStudent,
-      firstName: "มานะ",
-      lastName: "นักเรียน",
-      studentId: "S-0002",
-      classRoom: "มัธยมศึกษา",
       role: "STUDENT",
     },
   });
@@ -232,7 +221,7 @@ async function main() {
     });
   }
 
-  console.info("Seed complete. Demo accounts: admin, teacher, student, schoolstudent.");
+  console.info("Seed complete. Demo accounts: admin, teacher, student.");
 }
 
 main()
