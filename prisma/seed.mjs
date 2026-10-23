@@ -66,36 +66,37 @@ async function main() {
       lastName: "นักเรียน",
       studentId: "S-0002",
       classRoom: "มัธยมศึกษา",
-      role: "SCHOOL_STUDENT",
+      role: "STUDENT",
     },
   });
 
   const roomDefinitions = [
-    ["251", "ห้อง 251", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["252", "ห้อง 252", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["253", "ห้อง 253", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["831", "ห้อง 831", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["832", "ห้อง 832", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["751", "ห้อง 751", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["821", "ห้อง 821", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["823", "ห้อง 823", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["851", "ห้อง 851", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["841", "ห้อง 841", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["243", "ห้อง 243", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["861", "ห้อง 861", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
-    ["862", "ห้อง 862", "ไม่ระบุ", "ไม่ระบุ", "OTHER"],
+    ...["243", "251", "252", "253", "423", "424", "733", "751", "752", "821", "831", "832", "841", "851", "862"]
+      .map((roomCode) => [
+        roomCode,
+        `ห้อง ${roomCode}`,
+        roomCode[0],
+        roomCode[1],
+        "OTHER",
+      ]),
   ];
   const legacyRoomCodes = [
     "DB-01", "DB-02", "DB-03",
     "LAB-01", "LAB-02", "LAB-03",
     "SERVER-01", "CLASS-01", "CLASS-02", "CLASS-03",
+    "823", "861",
   ];
 
   const rooms = [];
   for (const [roomCode, roomName, building, floor, roomType] of roomDefinitions) {
     const room = await prisma.room.upsert({
       where: { roomCode },
-      update: { deletedAt: null },
+      update: {
+        roomName,
+        building,
+        floor,
+        deletedAt: null,
+      },
       create: {
         roomCode,
         roomName,
@@ -218,7 +219,7 @@ async function main() {
     ["school_name", "วิทยาลัยพณิชยการธนบุรี", "ชื่อสถานศึกษา"],
     ["default_borrow_duration", "120", "ระยะเวลายืมเริ่มต้น หน่วยเป็นนาที"],
     ["overdue_notification_minutes", "15", "แจ้งเตือนก่อนครบกำหนด หน่วยเป็นนาที"],
-    ["allow_student_borrow", "true", "อนุญาตให้นักเรียนยืม"],
+    ["allow_student_borrow", "true", "อนุญาตให้นักเรียน/นักศึกษายืม"],
     ["allow_teacher_borrow", "true", "อนุญาตให้ครูยืม"],
     ["allow_user_return", "true", "อนุญาตให้คืนกุญแจ"],
     ["maintenance_mode", "false", "ปิดระบบเพื่อบำรุงรักษา"],

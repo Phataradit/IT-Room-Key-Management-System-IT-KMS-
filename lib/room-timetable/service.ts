@@ -77,11 +77,11 @@ function auditInputValue(input: ScheduleInput) {
     startTime: input.startTime,
     endTime: input.endTime,
     courseCode: input.courseCode ?? null,
-    subject: input.subject,
-    teacherName: input.teacherName,
-    className: input.className,
-    semester: input.semester,
-    academicYear: input.academicYear,
+    subject: input.subject ?? null,
+    teacherName: input.teacherName ?? null,
+    className: input.className ?? null,
+    semester: input.semester ?? null,
+    academicYear: input.academicYear ?? null,
     effectiveFrom: input.effectiveFrom,
     effectiveTo: input.effectiveTo ?? null,
     notes: input.notes ?? null,
@@ -159,7 +159,7 @@ async function lockRoom(tx: Prisma.TransactionClient, roomId: string) {
 }
 
 async function validateTeacher(tx: Prisma.TransactionClient, input: ScheduleInput) {
-  if (!input.teacherId) return input.teacherName;
+  if (!input.teacherId) return input.teacherName ?? null;
   const teacher = await tx.user.findFirst({
     where: { id: input.teacherId, role: UserRole.TEACHER, status: "ACTIVE", deletedAt: null },
     select: { firstName: true, lastName: true },
@@ -174,8 +174,12 @@ async function findConflict(
   excludeId?: string,
 ) {
   const dateRange = [
-    { OR: [{ effectiveTo: null }, { effectiveTo: { gte: asDate(input.effectiveFrom)! } }] },
-    ...(input.effectiveTo ? [{ OR: [{ effectiveFrom: null }, { effectiveFrom: { lte: asDate(input.effectiveTo)! } }] }] : []),
+    ...(input.effectiveFrom
+      ? [{ OR: [{ effectiveTo: null }, { effectiveTo: { gte: asDate(input.effectiveFrom)! } }] }]
+      : []),
+    ...(input.effectiveTo
+      ? [{ OR: [{ effectiveFrom: null }, { effectiveFrom: { lte: asDate(input.effectiveTo)! } }] }]
+      : []),
   ];
   const schedule = await tx.roomSchedule.findFirst({
     where: {
@@ -187,10 +191,10 @@ async function findConflict(
       endTime: { gt: input.startTime },
       AND: dateRange,
     },
-    select: { subject: true, startTime: true, endTime: true, className: true },
+    select: { subject: true, courseCode: true, startTime: true, endTime: true, className: true },
   });
   if (schedule) {
-    return `ชนกับตาราง "${schedule.subject}" กลุ่ม ${schedule.className} เวลา ${schedule.startTime}-${schedule.endTime}`;
+    return `ชนกับตาราง "${schedule.subject ?? schedule.courseCode ?? "ไม่ระบุรายการ"}" กลุ่ม ${schedule.className ?? "ไม่ระบุ"} เวลา ${schedule.startTime}-${schedule.endTime}`;
   }
 
   const bookings = await tx.$queryRaw<Array<{ bookingNo: string; booking_day: Date }>>`
@@ -205,7 +209,7 @@ async function findConflict(
       AND b."status" IN ('PENDING', 'APPROVED', 'USING')
       AND (${excludeId ?? null}::text IS NULL OR b."id" <> ${excludeId ?? null})
       AND EXTRACT(DOW FROM days.booking_day)::integer = ${dayNumber[input.dayOfWeek]}
-      AND days.booking_day::date >= ${input.effectiveFrom}::date
+      AND (${input.effectiveFrom ?? null}::date IS NULL OR days.booking_day::date >= ${input.effectiveFrom ?? null}::date)
       AND (${input.effectiveTo ?? null}::date IS NULL OR days.booking_day::date <= ${input.effectiveTo ?? null}::date)
       AND (days.booking_day::date + ${input.startTime}::time) < (b."endsAt" AT TIME ZONE 'Asia/Bangkok')
       AND (days.booking_day::date + ${input.endTime}::time) > (b."startsAt" AT TIME ZONE 'Asia/Bangkok')
@@ -249,7 +253,24 @@ function assertScheduleManager(actor: Actor) {
   }
 }
 
-export async function createRoomSchedule(actor: Actor, input: ScheduleInput, request: AuditRequest) {
+export async function createRoomSchedule(
+  actor: Actor,
+  input: ScheduleInput,
+  request: AuditRequest,
+  importSource?: {
+    scheduleImportId: string;
+    sourceFileHash: string;
+    sourceFileName: string;
+    sourcePage: number;
+    sourceCellKey: string;
+    sourceCellText: string;
+    sourceBounds: Prisma.InputJsonValue;
+    sourceWords: Prisma.InputJsonValue;
+    sourceStructured: Prisma.InputJsonValue;
+    sourceBuilding: string | null;
+    sourceConfidence: number | null;
+  },
+) {
   assertScheduleManager(actor);
   const outcome = await prisma.$transaction(async (tx) => {
     await lockRoom(tx, input.roomId);
@@ -258,6 +279,19 @@ export async function createRoomSchedule(actor: Actor, input: ScheduleInput, req
       select: { id: true },
     });
     if (!room) throw new RoomScheduleError("ห้องนี้ไม่มีอยู่หรือปิดใช้งาน", "ROOM_UNAVAILABLE", 409);
+    if (importSource) {
+      const imported = await tx.roomSchedule.findUnique({
+        where: {
+          sourceFileHash_sourcePage_sourceCellKey: {
+            sourceFileHash: importSource.sourceFileHash,
+            sourcePage: importSource.sourcePage,
+            sourceCellKey: importSource.sourceCellKey,
+          },
+        },
+        select: { id: true },
+      });
+      if (imported) throw new RoomScheduleError("รายการจากไฟล์และตำแหน่งนี้ถูกนำเข้าแล้ว", "IMPORT_DUPLICATE", 409);
+    }
     const conflict = await findConflict(tx, input);
     if (conflict) {
       await tx.auditLog.create({
@@ -282,10 +316,11 @@ export async function createRoomSchedule(actor: Actor, input: ScheduleInput, req
         effectiveFrom: asDate(input.effectiveFrom),
         effectiveTo: asDate(input.effectiveTo),
         notes: input.notes || null,
+        ...(importSource ?? {}),
       },
     });
     await writeScheduleAudit(tx, actor, "ROOM_SCHEDULE_CREATE", schedule.id, undefined, auditValue(schedule), request);
-    await notifyScheduleChange(tx, schedule, `เพิ่มตาราง ${schedule.subject}`, schedule.updatedAt.toISOString());
+    await notifyScheduleChange(tx, schedule, `เพิ่มตาราง ${schedule.subject ?? schedule.courseCode ?? "ประจำห้อง"}`, schedule.updatedAt.toISOString());
     return { schedule } as const;
   });
   if ("conflict" in outcome && outcome.conflict) {
@@ -357,25 +392,32 @@ export async function updateRoomSchedule(
   return outcome.schedule;
 }
 
-export async function deactivateRoomSchedule(actor: Actor, scheduleId: string, request: AuditRequest) {
+export async function deleteRoomSchedule(actor: Actor, scheduleId: string, request: AuditRequest) {
   assertScheduleManager(actor);
   return prisma.$transaction(async (tx) => {
     const current = await tx.roomSchedule.findUnique({ where: { id: scheduleId } });
     if (!current) throw new RoomScheduleError("ไม่พบตารางสอน", "SCHEDULE_NOT_FOUND", 404);
     await lockRoom(tx, current.roomId);
-    const updated = await tx.roomSchedule.update({
+    await tx.roomSchedule.delete({
       where: { id: scheduleId },
-      data: { status: ScheduleStatus.INACTIVE },
     });
     await markScheduleExpiryNotificationsRead(tx, scheduleId);
-    await writeScheduleAudit(tx, actor, "ROOM_SCHEDULE_CANCEL", scheduleId, auditValue(current), auditValue(updated), request);
+    await writeScheduleAudit(
+      tx,
+      actor,
+      "ROOM_SCHEDULE_DELETE",
+      scheduleId,
+      auditValue(current),
+      { deleted: true },
+      request,
+    );
     await notifyScheduleChange(
       tx,
-      updated,
-      `ยกเลิกตาราง ${updated.subject}`,
-      updated.updatedAt.toISOString(),
+      current,
+      `ลบตาราง ${current.subject ?? current.courseCode ?? "ประจำห้อง"}`,
+      new Date().toISOString(),
     );
-    return updated;
+    return { id: scheduleId };
   });
 }
 
@@ -475,12 +517,12 @@ export function scheduleOccurrence(schedule: {
   dayOfWeek: DayOfWeek;
   startTime: string;
   endTime: string;
-  subject: string;
+  subject: string | null;
   courseCode: string | null;
-  teacherName: string;
-  className: string;
-  semester: string;
-  academicYear: string;
+  teacherName: string | null;
+  className: string | null;
+  semester: string | null;
+  academicYear: string | null;
   effectiveFrom: Date | null;
   effectiveTo: Date | null;
   status: ScheduleStatus;
@@ -499,7 +541,7 @@ export function scheduleOccurrence(schedule: {
     roomId: schedule.roomId,
     roomCode: schedule.room.roomCode,
     roomName: schedule.room.roomName,
-    title: schedule.subject,
+    title: schedule.subject ?? schedule.courseCode ?? "ไม่ระบุรายการ",
     courseCode: schedule.courseCode,
     teacherName: schedule.teacherName,
     className: schedule.className,

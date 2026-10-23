@@ -8,7 +8,6 @@ datasource db {
 }
 
 enum UserRole {
-  SCHOOL_STUDENT
   STUDENT
   TEACHER
   ADMIN
@@ -130,6 +129,7 @@ model User {
   auditLogs        AuditLog[]
   responsibleRooms RoomTeacher[]
   taughtSchedules  RoomSchedule[]      @relation("ScheduleTeacher")
+  scheduleImports  RoomScheduleImport[]
 
   @@index([role, status])
   @@index([lastName, firstName])
@@ -189,32 +189,60 @@ model RoomKey {
 }
 
 model RoomSchedule {
-  id           String         @id @default(cuid())
-  roomId       String
-  teacherId    String?
-  dayOfWeek    DayOfWeek
-  startTime    String
-  endTime      String
-  courseCode   String?
-  subject      String
-  teacherName  String
-  className    String
-  semester     String
-  academicYear String
-  effectiveFrom DateTime?     @db.Date
-  effectiveTo   DateTime?     @db.Date
-  notes         String?
-  status       ScheduleStatus @default(ACTIVE)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  room         Room           @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  teacher      User?          @relation("ScheduleTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  exceptions   RoomScheduleException[]
+  id               String                  @id @default(cuid())
+  roomId           String
+  teacherId        String?
+  dayOfWeek        DayOfWeek
+  startTime        String
+  endTime          String
+  courseCode       String?
+  subject          String?
+  teacherName      String?
+  className        String?
+  semester         String?
+  academicYear     String?
+  effectiveFrom    DateTime?               @db.Date
+  effectiveTo      DateTime?               @db.Date
+  notes            String?
+  sourceFileHash   String?
+  scheduleImportId String?
+  sourceFileName   String?
+  sourcePage       Int?
+  sourceCellKey    String?
+  sourceCellText   String?
+  sourceBounds     Json?
+  sourceWords      Json?
+  sourceStructured Json?
+  sourceBuilding   String?
+  sourceConfidence Float?
+  status           ScheduleStatus          @default(ACTIVE)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  room             Room                    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  teacher          User?                   @relation("ScheduleTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  scheduleImport   RoomScheduleImport?     @relation(fields: [scheduleImportId], references: [id], onDelete: Restrict)
+  exceptions       RoomScheduleException[]
 
+  @@unique([sourceFileHash, sourcePage, sourceCellKey])
   @@index([roomId, dayOfWeek, status])
   @@index([academicYear, semester])
   @@index([teacherId, status])
   @@index([effectiveFrom, effectiveTo])
+  @@index([scheduleImportId])
+}
+
+model RoomScheduleImport {
+  id            String         @id @default(cuid())
+  fileHash      String         @unique
+  fileName      String
+  pageCount     Int
+  rawExtraction Json
+  createdById   String?
+  createdAt     DateTime       @default(now())
+  createdBy     User?          @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  schedules     RoomSchedule[]
+
+  @@index([createdById, createdAt])
 }
 
 model RoomScheduleException {
@@ -273,32 +301,32 @@ model BorrowItem {
 }
 
 model RoomBooking {
-  id                String        @id @default(cuid())
-  bookingNo         String        @unique
-  userId            String
-  roomId            String
-  startsAt          DateTime
-  endsAt            DateTime
-  status            BookingStatus @default(PENDING)
-  purpose           String
-  attendeeCount     Int
-  note              String?
-  approvedById      String?
-  approvedAt        DateTime?
-  rejectedById      String?
-  rejectedAt        DateTime?
-  rejectionReason   String?
-  startedAt         DateTime?
-  returnedAt        DateTime?
-  returnNote        String?
-  returnedById      String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  user              User          @relation("BookingOwner", fields: [userId], references: [id], onDelete: Restrict)
-  room              Room          @relation(fields: [roomId], references: [id], onDelete: Restrict)
-  approvedBy        User?         @relation("BookingApprover", fields: [approvedById], references: [id], onDelete: SetNull)
-  rejectedBy        User?         @relation("BookingRejecter", fields: [rejectedById], references: [id], onDelete: SetNull)
-  returnedBy        User?         @relation("BookingReturnConfirmer", fields: [returnedById], references: [id], onDelete: SetNull)
+  id              String        @id @default(cuid())
+  bookingNo       String        @unique
+  userId          String
+  roomId          String
+  startsAt        DateTime
+  endsAt          DateTime
+  status          BookingStatus @default(PENDING)
+  purpose         String
+  attendeeCount   Int
+  note            String?
+  approvedById    String?
+  approvedAt      DateTime?
+  rejectedById    String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  startedAt       DateTime?
+  returnedAt      DateTime?
+  returnNote      String?
+  returnedById    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation("BookingOwner", fields: [userId], references: [id], onDelete: Restrict)
+  room            Room          @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  approvedBy      User?         @relation("BookingApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy      User?         @relation("BookingRejecter", fields: [rejectedById], references: [id], onDelete: SetNull)
+  returnedBy      User?         @relation("BookingReturnConfirmer", fields: [returnedById], references: [id], onDelete: SetNull)
 
   @@index([userId, startsAt])
   @@index([roomId, status, startsAt, endsAt])

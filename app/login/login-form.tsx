@@ -78,7 +78,7 @@ export function LoginForm() {
           </form>
           <div className="login-note">
             <span className="secure-icon" aria-hidden="true">✓</span>
-            ระบบสำหรับบุคลากรและนักศึกษา วิทยาลัยพณิชยการธนบุรี
+            ระบบสำหรับนักเรียน/นักศึกษาและบุคลากร วิทยาลัยพณิชยการธนบุรี
           </div>
         </div>
         <footer className="login-footer">IT Room Key Management System <span>·</span> © 2026</footer>

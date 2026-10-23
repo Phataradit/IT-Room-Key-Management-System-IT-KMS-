@@ -22,7 +22,6 @@ import {
 import {
   CalendarOutlined,
   LeftOutlined,
-  PlusOutlined,
   PrinterOutlined,
   RightOutlined,
   SearchOutlined,
@@ -30,12 +29,15 @@ import {
 import {
   addDays,
   bangkokDateStamp,
-  dayOfWeekForDate,
   mondayOfWeek,
-  timeToMinutes,
 } from "@/lib/room-timetable/time.mjs";
+import { RoomScheduleImport } from "@/components/room-timetable/room-schedule-import";
+import {
+  getTimetableTimeHeaders,
+  layoutTimetableEntries,
+} from "@/lib/room-timetable/timetable-layout.mjs";
 
-type ActorRole = "SCHOOL_STUDENT" | "STUDENT" | "TEACHER" | "ADMIN";
+type ActorRole = "STUDENT" | "TEACHER" | "ADMIN";
 type DayName = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
 type RoomOption = {
   id: string;
@@ -117,13 +119,6 @@ const statusColors: Record<string, string> = {
   CANCELLED: "default",
   REJECTED: "red",
 };
-const dayLabels = Object.fromEntries(days.map((day) => [day.value, day.label])) as Record<DayName, string>;
-const timetablePeriods = Array.from({ length: 13 }, (_, index) => ({
-  number: index + 1,
-  start: (index + 8) * 60,
-  end: (index + 9) * 60,
-}));
-
 function formatTime(value: string) {
   return new Intl.DateTimeFormat("th-TH", {
     hour: "2-digit",
@@ -185,7 +180,6 @@ export function RoomTimetableView({
   const [searchText, setSearchText] = useState("");
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"WEEK" | "LIST">("WEEK");
-  const [mobileDay, setMobileDay] = useState<DayName>(dayOfWeekForDate(initialWeekStart) as DayName);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingId, setEditingId] = useState("");
   const [working, setWorking] = useState(false);
@@ -229,9 +223,19 @@ export function RoomTimetableView({
 
   const entries = useMemo(() => data?.entries ?? [], [data?.entries]);
   const conflictIds = useMemo(() => detectConflicts(entries), [entries]);
+  const timetableLayout = useMemo(() => layoutTimetableEntries(entries.map((entry) => ({
+    ...entry,
+    startTime: getTime(entry.startsAt),
+    endTime: getTime(entry.endsAt),
+  }))), [entries]);
+  const timeHeaders = useMemo(
+    () => getTimetableTimeHeaders(timetableLayout.timelineStart, timetableLayout.timelineEnd),
+    [timetableLayout.timelineEnd, timetableLayout.timelineStart],
+  );
+  const timetableColumns = `repeat(${timetableLayout.timelineEnd - timetableLayout.timelineStart}, minmax(0, 1fr))`;
   const byDay = useMemo(() => new Map(
-    days.map(({ value }) => [value, entries.filter((entry) => entry.dayOfWeek === value)]),
-  ), [entries]);
+    days.map(({ value }) => [value, timetableLayout.placements.filter(({ entry }) => entry.dayOfWeek === value)]),
+  ), [timetableLayout.placements]);
 
   const openCreate = () => {
     setEditingId("");
@@ -265,10 +269,10 @@ export function RoomTimetableView({
         startTime: String(schedule.startTime),
         endTime: String(schedule.endTime),
         courseCode: schedule.courseCode ? String(schedule.courseCode) : "",
-        subject: String(schedule.subject),
-        className: String(schedule.className),
-        semester: String(schedule.semester),
-        academicYear: String(schedule.academicYear),
+        subject: String(schedule.subject ?? ""),
+        className: String(schedule.className ?? ""),
+        semester: String(schedule.semester ?? ""),
+        academicYear: String(schedule.academicYear ?? ""),
         effectiveFrom: schedule.effectiveFrom ? String(schedule.effectiveFrom).slice(0, 10) : weekStart,
         effectiveTo: schedule.effectiveTo ? String(schedule.effectiveTo).slice(0, 10) : "",
         notes: schedule.notes ? String(schedule.notes) : "",
@@ -313,15 +317,16 @@ export function RoomTimetableView({
     }
   };
 
-  const deactivateSchedule = async (entry: TimetableEntry) => {
+  const deleteSchedule = async (scheduleId: string) => {
     setWorking(true);
     try {
-      const response = await fetch(`/api/room-timetable/${encodeURIComponent(entry.referenceId)}`, { method: "DELETE" });
+      const response = await fetch(`/api/room-timetable/${encodeURIComponent(scheduleId)}`, { method: "DELETE" });
       await readJson(response);
-      messageApi.success("ปิดใช้งานตารางแล้ว");
+      messageApi.success("ลบตารางประจำห้องแล้ว");
+      setEditorOpen(false);
       await loadData();
     } catch (cause) {
-      messageApi.error(cause instanceof Error ? cause.message : "ปิดตารางไม่สำเร็จ");
+      messageApi.error(cause instanceof Error ? cause.message : "ลบตารางไม่สำเร็จ");
     } finally {
       setWorking(false);
     }
@@ -431,34 +436,38 @@ export function RoomTimetableView({
         <Space wrap size={4}>
           <Button size="small" onClick={() => void openEdit(entry)}>แก้ไข</Button>
           <Button size="small" onClick={() => void openExceptions(entry)}>วันยกเว้น</Button>
-          <Popconfirm title="ปิดใช้งานตารางนี้หรือไม่" onConfirm={() => void deactivateSchedule(entry)}>
-            <Button size="small" danger loading={working}>ปิด</Button>
+          <Popconfirm title="ลบตารางประจำห้องนี้ถาวรหรือไม่" description="ข้อมูลตารางและวันยกเว้นจะถูกลบ" onConfirm={() => void deleteSchedule(entry.referenceId)}>
+            <Button size="small" danger loading={working}>ลบ</Button>
           </Popconfirm>
         </Space>
       ) : null,
     },
   ];
 
-  const renderGridEntry = (entry: TimetableEntry) => {
+  const renderGridEntry = (placement: (typeof timetableLayout.placements)[number]) => {
+    const entry = placement.entry;
     const conflict = conflictIds.has(entry.id);
     return (
       <button
         type="button"
         className={`timetable-cell-entry ${entry.type === "BOOKING" ? "booking-event" : "schedule-event"} ${conflict ? "conflict-event" : ""}`}
         key={entry.id}
+        style={{
+          gridColumn: `${placement.gridColumnStart} / ${placement.gridColumnEnd}`,
+          gridRow: placement.lane + 1,
+        }}
         title={`ห้อง ${entry.roomCode} · ${entry.title} · ${formatTime(entry.startsAt)}–${formatTime(entry.endsAt)}`}
         onClick={() => entry.type === "SCHEDULE" && canManage ? void openEdit(entry) : undefined}
       >
         <strong>ห้อง {entry.roomCode}</strong>
         <span className="timetable-cell-subject">{entry.title}</span>
-        <span>{formatTime(entry.startsAt)}–{formatTime(entry.endsAt)}</span>
+        <span>{placement.entry.startTime}–{placement.entry.endTime}</span>
         {entry.className && <span>{entry.className}</span>}
+        {entry.teacherName && <span>{entry.teacherName}</span>}
         {conflictIds.has(entry.id) && <span>เวลาชน</span>}
       </button>
     );
   };
-
-  const selectedMobileEntries = entries.filter((entry) => entry.dayOfWeek === mobileDay);
 
   return (
     <div className="dashboard-content room-timetable-page">
@@ -470,7 +479,13 @@ export function RoomTimetableView({
           <p className="welcome-subtitle">ตรวจสอบการใช้ห้องตามวันและคาบเวลา</p>
         </div>
         <Space wrap>
-          {canManage && <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>เพิ่มตารางประจำห้อง</Button>}
+          {canManage && (
+            <RoomScheduleImport
+              rooms={data?.rooms ?? []}
+              onImported={() => void loadData()}
+              onManualCreate={openCreate}
+            />
+          )}
           <Button icon={<PrinterOutlined />} onClick={() => window.print()}>พิมพ์</Button>
         </Space>
       </div>
@@ -550,81 +565,63 @@ export function RoomTimetableView({
 
       {error && <Alert type="error" showIcon message={error} action={<Button size="small" onClick={() => void loadData()}>ลองอีกครั้ง</Button>} />}
       {!error && view === "WEEK" && (
-        <>
-          <div className="timetable-mobile-day">
-            <Select
-              aria-label="เลือกวันที่แสดง"
-              value={mobileDay}
-              onChange={setMobileDay}
-              options={weekDates.map((date) => ({ value: dayOfWeekForDate(date) as DayName, label: `${dayLabels[dayOfWeekForDate(date) as DayName]} · ${formatDate(date)}` }))}
-            />
-            <List
-              loading={loading}
-              dataSource={selectedMobileEntries}
-              locale={{ emptyText: <Empty description="ไม่มีรายการใช้ห้องวันนี้" /> }}
-              renderItem={(entry) => (
-                <List.Item>
-                  <Card className="timetable-mobile-event" size="small">
-                    <Space direction="vertical" size={5}>
-                      <Space wrap>
-                        <Tag color={entry.type === "SCHEDULE" ? "blue" : "purple"}>{entry.type === "SCHEDULE" ? "ตารางเรียน" : "จองห้อง"}</Tag>
-                        <Tag color={statusColors[entry.status] ?? "default"}>{statusLabels[entry.status] ?? entry.status}</Tag>
-                        {conflictIds.has(entry.id) && <Tag color="red">เวลาชน</Tag>}
-                      </Space>
-                      <Typography.Text strong>ห้อง {entry.roomCode} · {entry.title}</Typography.Text>
-                      <Typography.Text>{formatTime(entry.startsAt)}–{formatTime(entry.endsAt)}</Typography.Text>
-                      <Typography.Text type="secondary">{[entry.teacherName, entry.className].filter(Boolean).join(" · ")}</Typography.Text>
-                      {entry.type === "SCHEDULE" && canManage && (
-                        <Space>
-                          <Button size="small" onClick={() => void openEdit(entry)}>แก้ไข</Button>
-                          <Button size="small" onClick={() => void openExceptions(entry)}>วันยกเว้น</Button>
-                        </Space>
-                      )}
-                    </Space>
-                  </Card>
-                </List.Item>
-              )}
-            />
-          </div>
-          <div className="timetable-week-scroll">
-            <table className="timetable-class-grid">
-              <thead>
-                <tr>
-                  <th scope="col">วัน</th>
-                  {timetablePeriods.map((period) => (
-                    <th scope="col" key={period.number}>
-                      <strong>{period.number}</strong>
-                      <span>{`${String(Math.floor(period.start / 60)).padStart(2, "0")}:00–${String(Math.floor(period.end / 60)).padStart(2, "0")}:00`}</span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {days.map((day, dayIndex) => (
-                  <tr key={day.value}>
-                    <th scope="row">
-                      <strong>{day.label}</strong>
-                      <span>{formatDate(weekDates[dayIndex])}</span>
-                    </th>
-                    {timetablePeriods.map((period) => {
-                      const periodEntries = (byDay.get(day.value) ?? []).filter((entry) => {
-                        const start = timeToMinutes(getTime(entry.startsAt));
-                        return start >= period.start && start < period.end;
-                      });
-                      return (
-                        <td key={period.number}>
-                          {periodEntries.length
-                            ? periodEntries.map(renderGridEntry)
-                            : <span className="timetable-empty-cell">—</span>}
-                        </td>
-                      );
-                    })}
-                  </tr>
+        <div className="timetable-week-scroll">
+          <div className="timetable-calendar" role="table" aria-label="ตารางใช้ห้องรายสัปดาห์">
+            <div className="timetable-calendar-row timetable-calendar-header" role="row">
+              <div className="timetable-calendar-day timetable-calendar-corner" role="columnheader">วัน</div>
+              <div className="timetable-calendar-timeline timetable-calendar-hours" style={{ gridTemplateColumns: timetableColumns }}>
+                {timeHeaders.map((header) => (
+                  <div
+                    className={`timetable-calendar-hour ${header.number === null ? "special-period" : ""}`}
+                    key={`${header.start}-${header.end}`}
+                    role="columnheader"
+                    aria-label={header.number === null ? header.label : `คาบที่ ${header.number} ${header.label}`}
+                    style={{
+                      gridColumn: `${header.start - timetableLayout.timelineStart + 1} / ${header.end - timetableLayout.timelineStart + 1}`,
+                    }}
+                  >
+                    <strong>{header.number ?? (header.start === 450 ? "ก่อนคาบ" : "")}</strong>
+                    <span>{header.label}</span>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
+            {days.map((day, dayIndex) => {
+              const placements = byDay.get(day.value) ?? [];
+              const laneCount = Math.max(1, ...placements.map(({ lane }) => lane + 1));
+              return (
+                <div className="timetable-calendar-row" key={day.value} role="row">
+                  <div className="timetable-calendar-day" role="rowheader">
+                    <strong>{day.label}</strong>
+                    <span>{formatDate(weekDates[dayIndex])}</span>
+                  </div>
+                  <div
+                    className="timetable-calendar-timeline"
+                    style={{
+                      gridTemplateColumns: timetableColumns,
+                      gridTemplateRows: `repeat(${laneCount}, minmax(76px, auto))`,
+                    }}
+                    role="gridcell"
+                  >
+                    {timeHeaders.slice(0, -1).map((header) => (
+                      <span
+                        aria-hidden="true"
+                        className="timetable-calendar-gridline"
+                        key={`${header.start}-${header.end}`}
+                        style={{
+                          gridColumn: `${header.end - timetableLayout.timelineStart + 1} / ${header.end - timetableLayout.timelineStart + 2}`,
+                          gridRow: "1 / -1",
+                        }}
+                      />
+                    ))}
+                    {placements.map(renderGridEntry)}
+                    {!placements.length && <span className="timetable-calendar-empty">ไม่มีรายการใช้ห้อง</span>}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </>
+        </div>
       )}
       {!error && view === "LIST" && (
         <Card bordered={false} className="room-timetable-list-card">
@@ -658,6 +655,17 @@ export function RoomTimetableView({
           showIcon
           message="ระบบจะตรวจสอบเวลาซ้ำทั้งกับตารางประจำและรายการจองที่มีผลในช่วงวันที่กำหนด"
         />
+        {editingId && (
+          <div className="schedule-delete-action">
+            <Popconfirm
+              title="ลบตารางประจำห้องนี้ถาวรหรือไม่"
+              description="ข้อมูลตารางและวันยกเว้นจะถูกลบ"
+              onConfirm={() => void deleteSchedule(editingId)}
+            >
+              <Button danger loading={working}>ลบตารางนี้</Button>
+            </Popconfirm>
+          </div>
+        )}
         <Form<ScheduleFormValues>
           form={form}
           layout="vertical"

@@ -262,7 +262,7 @@ export async function runRoomUsageNotificationJob(now = new Date()) {
         startsAt,
         endsAt,
         actionUrl: `/room-timetable?roomId=${encodeURIComponent(schedule.roomId)}&weekStart=${date}`,
-        subject: schedule.subject,
+        subject: schedule.subject ?? schedule.courseCode ?? "ตารางประจำห้อง",
         now,
         settings,
       });

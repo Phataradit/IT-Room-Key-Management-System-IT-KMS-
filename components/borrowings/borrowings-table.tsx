@@ -20,7 +20,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { isStudentRole } from "@/lib/auth/roles";
 
 type BookingStatus = "PENDING" | "APPROVED" | "USING" | "RETURNED" | "CANCELLED" | "REJECTED";
-type ActorRole = "SCHOOL_STUDENT" | "STUDENT" | "TEACHER" | "ADMIN";
+type ActorRole = "STUDENT" | "TEACHER" | "ADMIN";
 
 type BookingPerson = {
   id?: string;

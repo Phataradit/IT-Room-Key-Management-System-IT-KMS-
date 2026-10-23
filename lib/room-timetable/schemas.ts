@@ -10,19 +10,19 @@ export const roomScheduleInputSchema = z.object({
   startTime: timeSchema,
   endTime: timeSchema,
   courseCode: z.string().trim().max(50).nullable().optional(),
-  subject: z.string().trim().min(1).max(200),
-  teacherName: z.string().trim().min(1).max(200),
-  className: z.string().trim().min(1).max(100),
-  semester: z.string().trim().min(1).max(20),
-  academicYear: z.string().trim().min(1).max(20),
-  effectiveFrom: z.iso.date(),
+  subject: z.string().trim().max(200).nullable().optional(),
+  teacherName: z.string().trim().max(200).nullable().optional(),
+  className: z.string().trim().max(100).nullable().optional(),
+  semester: z.string().trim().max(20).nullable().optional(),
+  academicYear: z.string().trim().max(20).nullable().optional(),
+  effectiveFrom: z.iso.date().nullable().optional(),
   effectiveTo: z.iso.date().nullable().optional(),
   notes: z.string().trim().max(1000).nullable().optional(),
   status: z.nativeEnum(ScheduleStatus).default(ScheduleStatus.ACTIVE),
 }).refine((value) => value.startTime < value.endTime, {
   path: ["endTime"],
   message: "เวลาสิ้นสุดต้องอยู่หลังเวลาเริ่ม",
-}).refine((value) => !value.effectiveTo || value.effectiveFrom <= value.effectiveTo, {
+}).refine((value) => !value.effectiveTo || !value.effectiveFrom || value.effectiveFrom <= value.effectiveTo, {
   path: ["effectiveTo"],
   message: "วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่ม",
 });

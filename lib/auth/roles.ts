@@ -1,8 +1,7 @@
 import type { UserRole } from "@prisma/client";
 
 const roleLabels = {
-  SCHOOL_STUDENT: "นักเรียน",
-  STUDENT: "นักศึกษา",
+  STUDENT: "นักเรียน/นักศึกษา",
   TEACHER: "คุณครู",
   ADMIN: "Admin",
 } satisfies Record<UserRole, string>;
@@ -12,5 +11,5 @@ export function getRoleLabel(role: UserRole) {
 }
 
 export function isStudentRole(role: UserRole) {
-  return role === "SCHOOL_STUDENT" || role === "STUDENT";
+  return role === "STUDENT";
 }

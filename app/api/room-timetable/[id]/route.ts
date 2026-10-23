@@ -3,7 +3,7 @@ import { getApiUser } from "@/lib/auth/api-user";
 import { auditRequest, getRouteId, unauthorizedResponse } from "@/lib/borrowings/http";
 import { roomScheduleInputSchema } from "@/lib/room-timetable/schemas";
 import {
-  deactivateRoomSchedule,
+  deleteRoomSchedule,
   parseRoomScheduleJson,
   RoomScheduleError,
   updateRoomSchedule,
@@ -62,7 +62,7 @@ export async function DELETE(request: Request, context: IdRouteContext) {
   try {
     const actor = await getApiUser();
     if (!actor) return unauthorizedResponse();
-    const schedule = await deactivateRoomSchedule(actor, await getRouteId(context), auditRequest(request));
+    const schedule = await deleteRoomSchedule(actor, await getRouteId(context), auditRequest(request));
     return Response.json({ success: true, data: schedule });
   } catch (error) {
     return handleError(error);
