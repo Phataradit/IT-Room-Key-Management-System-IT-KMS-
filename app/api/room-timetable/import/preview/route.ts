@@ -1,6 +1,8 @@
 import { UserRole } from "@prisma/client";
 import { getApiUser } from "@/lib/auth/api-user";
 import { prisma } from "@/lib/db/prisma";
+import { findCoursesByCodes } from "@/lib/courses/service";
+import { applyDatabaseCourseNamesToPreview, getPreviewCourseCodes } from "@/lib/courses/pdf-preview.mjs";
 import { inspectRoomSchedulePdf } from "@/lib/room-timetable/pdf-import";
 import { unauthorizedResponse } from "@/lib/borrowings/http";
 
@@ -47,13 +49,16 @@ export async function POST(request: Request) {
       void (async () => {
         try {
           const result = await inspectRoomSchedulePdf(bytes, filename, (progress) => send("progress", progress));
+          const allCourseCodes = getPreviewCourseCodes(result);
+          const courses = await findCoursesByCodes(allCourseCodes);
+          const courseResolvedResult = applyDatabaseCourseNamesToPreview(result, courses);
           const rooms = await prisma.room.findMany({
             where: { deletedAt: null, status: { notIn: ["DISABLED", "MAINTENANCE"] } },
             select: { id: true, roomCode: true, roomName: true, building: true },
             orderBy: { roomCode: "asc" },
           });
           const roomByCode = new Map(rooms.map((room) => [room.roomCode, room]));
-          const rows = await Promise.all(result.rows.map(async (row) => {
+          const rows = await Promise.all(courseResolvedResult.rows.map(async (row) => {
             const room = row.roomCode ? roomByCode.get(row.roomCode) : null;
             const duplicate = Boolean(await prisma.roomSchedule.findFirst({
               where: {
@@ -69,7 +74,7 @@ export async function POST(request: Request) {
               duplicate,
             };
           }));
-          send("complete", { ...result, rows, rooms });
+          send("complete", { ...courseResolvedResult, rows, rooms });
         } catch (error) {
           console.error("Room schedule PDF preview error:", error);
           send("error", {

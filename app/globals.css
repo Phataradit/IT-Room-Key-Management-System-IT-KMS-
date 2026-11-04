@@ -325,6 +325,11 @@ a {
   gap: 4px;
 }
 
+.sidebar-nav a[href^="/courses"],
+.mobile-nav a[href^="/courses"] {
+  display: none !important;
+}
+
 .nav-link {
   display: flex;
   height: 43px;
@@ -874,6 +879,606 @@ a {
   color: #8794a2;
   font-size: 12px;
   text-align: center;
+}
+
+.admin-dashboard-page {
+  min-height: 100%;
+}
+
+.admin-dashboard-page .dashboard-content {
+  width: min(100%, 1320px);
+}
+
+.admin-dashboard-page .welcome-row {
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.admin-dashboard-page .welcome-subtitle {
+  max-width: 760px;
+  line-height: 1.7;
+}
+
+.admin-report-button,
+.admin-calendar-add {
+  min-height: 38px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 7px;
+  background: #2363c8;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.admin-report-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-dashboard-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 15px;
+  border: 1px solid #e5ebf2;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.admin-dashboard-controls label,
+.admin-calendar-form label {
+  display: grid;
+  gap: 6px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.admin-dashboard-controls input,
+.admin-dashboard-controls select,
+.admin-calendar-form input,
+.admin-calendar-form select {
+  min-width: 150px;
+  height: 36px;
+  padding: 0 9px;
+  border: 1px solid #dce4ed;
+  border-radius: 6px;
+  background: #fff;
+  color: #263b53;
+  font: inherit;
+  font-size: 12px;
+}
+
+.admin-data-status {
+  margin: auto 0 9px auto;
+  color: #718096;
+  font-size: 11px;
+}
+
+.admin-calendar-hint {
+  max-width: 250px;
+  padding-bottom: 9px;
+  color: #b45309;
+  font-size: 11px;
+}
+
+.admin-dashboard-error,
+.admin-calendar-success {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: #fff1f0;
+  color: #b42318;
+  font-size: 12px;
+}
+
+.admin-calendar-success {
+  background: #eaf8f0;
+  color: #18794e;
+}
+
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-stat-card,
+.admin-chart-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #e5ebf2;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(26 49 75 / 3%);
+}
+
+.admin-stat-card {
+  display: flex;
+  min-height: 105px;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.admin-stat-card > span {
+  color: #718096;
+  font-size: 11px;
+}
+
+.admin-stat-card > strong {
+  overflow: hidden;
+  color: #173a64;
+  font-size: 25px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-stat-card > small {
+  overflow: hidden;
+  color: #97a2af;
+  font-size: 10px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+}
+
+.admin-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-chart-wide {
+  grid-column: span 2;
+}
+
+.admin-chart-card h2 {
+  margin: 0 0 4px;
+  color: #1c3552;
+  font-size: 14px;
+}
+
+.admin-chart-card > p {
+  margin: 0 0 14px;
+  color: #8491a0;
+  font-size: 10px;
+}
+
+.admin-trend-list,
+.admin-mini-bars,
+.admin-count-list,
+.admin-room-bars {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-trend-row,
+.admin-mini-bars li,
+.admin-room-bars li {
+  display: grid;
+  grid-template-columns: 58px minmax(60px, 1fr) 28px;
+  align-items: center;
+  gap: 9px;
+  color: #66788c;
+  font-size: 10px;
+}
+
+.admin-trend-row > strong,
+.admin-mini-bars strong,
+.admin-room-bars strong {
+  color: #354d66;
+  font-size: 10px;
+  text-align: right;
+}
+
+.admin-bar-track {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #f0f3f7;
+}
+
+.admin-bar-track i {
+  height: 100%;
+  min-width: 0;
+}
+
+.admin-bar-success {
+  background: #2e9d72;
+}
+
+.admin-bar-using {
+  background: #e6a43a;
+}
+
+.admin-bar-cancelled {
+  background: #d97777;
+}
+
+.admin-bar-pending {
+  background: #9b8bd4;
+}
+
+.admin-bar-approved {
+  background: #55a6b0;
+}
+
+.admin-bar-rejected {
+  background: #7a8798;
+}
+
+.admin-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  color: #718096;
+  font-size: 10px;
+}
+
+.admin-chart-legend span::before {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: #2e9d72;
+  content: "";
+}
+
+.admin-chart-legend span:nth-child(2)::before {
+  background: #e6a43a;
+}
+
+.admin-chart-legend span:nth-child(3)::before {
+  background: #d97777;
+}
+
+.admin-chart-legend span:nth-child(4)::before {
+  background: #9b8bd4;
+}
+
+.admin-chart-legend span:nth-child(5)::before {
+  background: #55a6b0;
+}
+
+.admin-chart-legend span:nth-child(6)::before {
+  background: #7a8798;
+}
+
+.admin-count-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f2f5;
+  color: #66788c;
+  font-size: 11px;
+}
+
+.admin-count-list strong {
+  color: #354d66;
+}
+
+.admin-mini-bars li {
+  grid-template-columns: 72px minmax(40px, 1fr) 25px;
+}
+
+.admin-mini-bars i,
+.admin-room-bars i {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #f0f3f7;
+}
+
+.admin-mini-bars b,
+.admin-room-bars b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #4b83ce;
+}
+
+.admin-role-bars {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  gap: 2px;
+  margin-top: 14px;
+  border-radius: 8px;
+  background: #f0f3f7;
+}
+
+.admin-role-bars i {
+  background: #4b83ce;
+}
+
+.admin-role-bars i:nth-child(2) {
+  background: #55a68a;
+}
+
+.admin-role-bars i:nth-child(3) {
+  background: #e6a43a;
+}
+
+.admin-room-bars li {
+  grid-template-columns: minmax(125px, 0.7fr) minmax(50px, 1fr) 28px;
+}
+
+.admin-room-bars b {
+  background: #4b83ce;
+}
+
+.admin-room-table-card {
+  margin-top: 14px;
+}
+
+.admin-table-scroll {
+  overflow-x: auto;
+}
+
+.admin-table-scroll table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #52657a;
+  font-size: 11px;
+  text-align: left;
+}
+
+.admin-table-scroll th,
+.admin-table-scroll td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #edf0f4;
+  white-space: nowrap;
+}
+
+.admin-table-scroll th {
+  color: #718096;
+  font-weight: 650;
+}
+
+.admin-table-scroll td:not(:first-child),
+.admin-table-scroll th:not(:first-child) {
+  text-align: right;
+}
+
+.admin-empty {
+  padding: 14px 0;
+  color: #8794a2;
+  font-size: 11px;
+  text-align: center;
+}
+
+.admin-calendar-settings {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #e5ebf2;
+  border-radius: 9px;
+  background: #fff;
+}
+
+.admin-calendar-settings summary {
+  color: #1c3552;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-calendar-settings > p {
+  color: #718096;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.admin-calendar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f2f5;
+  color: #52657a;
+  font-size: 11px;
+}
+
+.admin-calendar-row span {
+  color: #8491a0;
+}
+
+.admin-calendar-row button {
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: #b42318;
+  cursor: pointer;
+  font: inherit;
+}
+
+.admin-calendar-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.admin-calendar-form input,
+.admin-calendar-form select {
+  min-width: 125px;
+}
+
+.dashboard-print-heading,
+.dashboard-print-footer {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .admin-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .admin-dashboard-page .dashboard-content {
+    padding: 24px 16px 85px;
+  }
+
+  .admin-dashboard-page .welcome-row {
+    flex-direction: column;
+  }
+
+  .admin-dashboard-controls {
+    align-items: stretch;
+  }
+
+  .admin-dashboard-controls label,
+  .admin-dashboard-controls input,
+  .admin-dashboard-controls select {
+    width: 100%;
+  }
+
+  .admin-data-status {
+    margin: 2px 0 0;
+  }
+
+  .admin-chart-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-chart-wide {
+    grid-column: auto;
+  }
+
+  .admin-calendar-row {
+    flex-wrap: wrap;
+  }
+
+  .admin-calendar-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-calendar-form label,
+  .admin-calendar-form input,
+  .admin-calendar-form select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .admin-calendar-add {
+    grid-column: span 2;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #dashboard-print-report,
+  #dashboard-print-report * {
+    visibility: visible !important;
+  }
+
+  #dashboard-print-report {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    color: #172b4d;
+    font-family: Arial, "Noto Sans Thai", sans-serif;
+  }
+
+  #dashboard-print-report .dashboard-print-heading,
+  #dashboard-print-report .dashboard-print-footer {
+    display: block;
+  }
+
+  .dashboard-print-heading {
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .dashboard-print-heading h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+
+  .dashboard-print-heading p {
+    margin: 4px 0;
+    font-size: 10px;
+  }
+
+  .admin-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .admin-stat-card,
+  .admin-chart-card {
+    padding: 8px;
+    break-inside: avoid;
+    box-shadow: none;
+  }
+
+  .admin-stat-card {
+    min-height: 68px;
+  }
+
+  .admin-stat-card > strong {
+    font-size: 17px;
+  }
+
+  .admin-stat-card > small,
+  .admin-stat-card > span,
+  .admin-chart-card > p,
+  .admin-chart-card li,
+  .admin-table-scroll table {
+    font-size: 8px;
+  }
+
+  .admin-chart-grid {
+    gap: 6px;
+  }
+
+  .admin-chart-card h2 {
+    font-size: 10px;
+  }
+
+  .admin-trend-list {
+    gap: 4px;
+  }
+
+  .admin-room-table-card {
+    margin-top: 6px;
+  }
+
+  .admin-table-scroll th,
+  .admin-table-scroll td {
+    padding: 5px;
+  }
+
+  .dashboard-print-footer {
+    margin-top: 12px;
+    font-size: 9px;
+    text-align: right;
+  }
 }
 
 .room-detail-grid {

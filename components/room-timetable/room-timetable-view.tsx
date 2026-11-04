@@ -709,7 +709,7 @@ export function RoomTimetableView({
                 options={data?.teachers.map((teacher) => ({ value: teacher.id, label: teacher.name }))}
               />
             </Form.Item>
-            <Form.Item name="teacherName" label="ชื่อผู้สอน / ผู้รับผิดชอบ" rules={[{ required: true }]}>
+            <Form.Item name="teacherName" label="ชื่อผู้สอน / ผู้รับผิดชอบ (ไม่บังคับ)">
               <Input maxLength={200} />
             </Form.Item>
             <Form.Item name="className" label="กลุ่มเรียน / ชั้น" rules={[{ required: true }]}>

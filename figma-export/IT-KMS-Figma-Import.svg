@@ -1,0 +1,350 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="4672" height="3232" viewBox="0 0 4672 3232">
+  <defs>
+    <style>
+      text { font-family: Inter, "Noto Sans Thai", Arial, sans-serif; fill: #172b4d; }
+      .board-title { font-size: 34px; font-weight: 700; }
+      .board-subtitle { font-size: 16px; fill: #64748b; }
+      .frame-title { font-size: 18px; font-weight: 700; fill: #102a43; }
+      .small { font-size: 12px; fill: #64748b; }
+      .label { font-size: 13px; font-weight: 600; }
+      .body { font-size: 15px; }
+      .heading { font-size: 25px; font-weight: 700; }
+      .subheading { font-size: 17px; font-weight: 650; }
+      .nav { font-size: 14px; fill: #52657a; }
+      .white { fill: #ffffff; }
+      .muted { fill: #64748b; }
+      .blue { fill: #2563eb; }
+      .line { stroke: #e2e8f0; stroke-width: 1; }
+      .card { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1; }
+      .app-bg { fill: #f4f7fb; }
+      .frame { fill: #ffffff; stroke: #d7e0eb; stroke-width: 1; }
+      .pill-text { font-size: 12px; font-weight: 600; }
+    </style>
+    <g id="shell">
+      <rect width="1440" height="900" rx="14" class="app-bg"/>
+      <rect width="250" height="900" rx="14" fill="#ffffff"/>
+      <rect x="235" width="15" height="900" fill="#ffffff"/>
+      <rect x="24" y="24" width="42" height="42" rx="12" fill="#2563eb"/>
+      <text x="45" y="53" text-anchor="middle" class="white" font-size="24" font-weight="800">K</text>
+      <text x="78" y="43" font-size="18" font-weight="750">IT-KMS</text>
+      <text x="78" y="59" font-size="9" font-weight="700" letter-spacing="1.3" fill="#7890a6">KEY MANAGEMENT</text>
+      <text x="28" y="113" class="small" font-weight="700">เมนูหลัก</text>
+      <g class="nav">
+        <text x="40" y="158">⌂</text><text x="68" y="158">หน้าหลัก</text>
+        <text x="40" y="208">▦</text><text x="68" y="208">ห้องทั้งหมด</text>
+        <text x="40" y="258">▤</text><text x="68" y="258">ตารางประจำห้อง</text>
+        <text x="40" y="308">▣</text><text x="68" y="308">สแกน QR</text>
+        <text x="40" y="358">▤</text><text x="68" y="358">ยืม-คืนห้อง</text>
+        <text x="40" y="408">◷</text><text x="68" y="408">ประวัติการยืม</text>
+      </g>
+      <rect x="18" y="690" width="214" height="150" rx="12" fill="#f6f8fb"/>
+      <circle cx="43" cy="718" r="13" fill="#e8eff9"/><text x="43" y="723" text-anchor="middle" font-size="15" fill="#2563eb">?</text>
+      <text x="64" y="722" class="label">ต้องการความช่วยเหลือ?</text>
+      <text x="32" y="753" class="small">ติดต่อผู้ดูแลระบบของคุณ</text>
+      <text x="32" y="786" font-size="13" font-weight="650" fill="#2563eb">ติดต่อเรา  →</text>
+      <rect x="250" width="1190" height="72" fill="#ffffff"/>
+      <line x1="250" y1="72" x2="1440" y2="72" class="line"/>
+      <text x="286" y="44" class="small">ระบบจัดการกุญแจ  /  วิทยาลัยพณิชยการธนบุรี</text>
+      <circle cx="1330" cy="36" r="17" fill="#f1f5f9"/><text x="1330" y="41" text-anchor="middle" font-size="16">♧</text>
+      <line x1="1360" y1="21" x2="1360" y2="51" class="line"/>
+      <circle cx="1391" cy="36" r="17" fill="#dbeafe"/><text x="1391" y="41" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">น</text>
+    </g>
+    <g id="active-dashboard"><rect x="18" y="130" width="214" height="42" rx="8" fill="#eff6ff" fill-opacity=".45"/><rect x="18" y="142" width="3" height="18" rx="2" fill="#2563eb"/></g>
+    <g id="active-rooms"><rect x="18" y="180" width="214" height="42" rx="8" fill="#eff6ff" fill-opacity=".45"/><rect x="18" y="192" width="3" height="18" rx="2" fill="#2563eb"/></g>
+    <g id="active-timetable"><rect x="18" y="230" width="214" height="42" rx="8" fill="#eff6ff" fill-opacity=".45"/><rect x="18" y="242" width="3" height="18" rx="2" fill="#2563eb"/></g>
+    <g id="active-scan"><rect x="18" y="280" width="214" height="42" rx="8" fill="#eff6ff" fill-opacity=".45"/><rect x="18" y="292" width="3" height="18" rx="2" fill="#2563eb"/></g>
+    <g id="active-borrowings"><rect x="18" y="330" width="214" height="42" rx="8" fill="#eff6ff" fill-opacity=".45"/><rect x="18" y="342" width="3" height="18" rx="2" fill="#2563eb"/></g>
+    <g id="active-history"><rect x="18" y="380" width="214" height="42" rx="8" fill="#eff6ff" fill-opacity=".45"/><rect x="18" y="392" width="3" height="18" rx="2" fill="#2563eb"/></g>
+  </defs>
+  <rect width="4672" height="3232" fill="#eef2f7"/>
+  <text x="80" y="58" class="board-title">IT-KMS · Figma Import Board</text>
+  <text x="80" y="91" class="board-subtitle">Thai-language desktop screens · Based on the existing IT Room Key Management System · SVG vectors and text are grouped by frame</text>
+  <rect x="3820" y="36" width="772" height="74" rx="12" fill="#ffffff" stroke="#d7e0eb"/>
+  <text x="3844" y="65" class="label">FIGMA IMPORT</text>
+  <text x="3844" y="89" class="small">Drag this SVG into Figma, or use File → Place image. Ungroup the imported board to edit.</text>
+
+  <!-- Screen 1: Dashboard -->
+  <g id="frame-dashboard" transform="translate(80 150)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-dashboard"/>
+    <text x="310" y="124" class="small">วันจันทร์ที่ 2 พฤศจิกายน 2569</text>
+    <text x="310" y="163" class="heading">สวัสดี, สมชาย 👋</text>
+    <text x="310" y="190" class="body muted">จัดการการยืม-คืนกุญแจห้องของคุณได้ที่นี่</text>
+    <rect x="1240" y="112" width="155" height="32" rx="16" fill="#eff6ff"/><text x="1317" y="133" text-anchor="middle" class="pill-text" fill="#1d4ed8">นักศึกษา</text>
+    <rect x="310" y="220" width="520" height="116" rx="12" fill="#1d4ed8"/>
+    <rect x="334" y="244" width="48" height="48" rx="12" fill="#ffffff" fill-opacity=".16"/>
+    <text x="358" y="276" text-anchor="middle" class="white" font-size="24">▣</text>
+    <text x="402" y="264" class="white" font-size="17" font-weight="700">สแกน QR Code</text>
+    <text x="402" y="289" class="white" font-size="13" opacity=".8">สแกนเพื่อดูข้อมูลห้อง</text>
+    <text x="790" y="278" text-anchor="end" class="white" font-size="22">→</text>
+    <rect x="850" y="220" width="545" height="116" rx="12" class="card"/>
+    <rect x="874" y="244" width="48" height="48" rx="12" fill="#eff6ff"/>
+    <text x="898" y="276" text-anchor="middle" font-size="23" fill="#2563eb">⚿</text>
+    <text x="942" y="264" class="subheading">ค้นหาห้อง</text><text x="942" y="289" class="small">ดูสถานะและรายละเอียด</text>
+    <text x="1355" y="278" text-anchor="end" font-size="22" fill="#2563eb">→</text>
+    <text x="310" y="392" class="subheading">สถานะการยืมของคุณ</text>
+    <text x="310" y="416" class="small">รายการที่กำลังดำเนินการ</text>
+    <text x="1395" y="402" text-anchor="end" font-size="13" fill="#2563eb">ประวัติทั้งหมด →</text>
+    <rect x="310" y="438" width="1085" height="118" rx="12" class="card"/>
+    <circle cx="360" cy="497" r="25" fill="#eff6ff"/><text x="360" y="505" text-anchor="middle" font-size="22" fill="#2563eb">⚿</text>
+    <rect x="406" y="458" width="150" height="25" rx="12" fill="#f1f5f9"/><circle cx="421" cy="470" r="4" fill="#94a3b8"/><text x="434" y="475" class="pill-text" fill="#64748b">ยังไม่มีรายการยืม</text>
+    <text x="406" y="510" class="label">ยังไม่มีรายการยืมที่กำลังดำเนินการ</text>
+    <text x="406" y="532" class="small">สแกน QR Code หรือค้นหาห้องเพื่อเริ่มยืมกุญแจ</text>
+    <rect x="1208" y="475" width="155" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="1285" y="500" text-anchor="middle" class="label" fill="#2563eb">ดูห้องทั้งหมด</text>
+    <text x="310" y="610" class="subheading">สถานะห้องล่าสุด</text><text x="310" y="634" class="small">ตรวจสอบห้องและความพร้อมใช้งาน</text>
+    <text x="1395" y="620" text-anchor="end" font-size="13" fill="#2563eb">ดูห้องทั้งหมด →</text>
+    <rect x="310" y="653" width="1085" height="184" rx="12" class="card"/>
+    <line x1="310" y1="714" x2="1395" y2="714" class="line"/><line x1="310" y1="775" x2="1395" y2="775" class="line"/>
+    <circle cx="352" cy="684" r="17" fill="#eff6ff"/><text x="352" y="689" text-anchor="middle" font-size="15" fill="#2563eb">⚿</text>
+    <text x="386" y="680" class="label">251</text><text x="386" y="700" class="small">ห้อง 251 · อาคาร 2 ชั้น 5</text>
+    <rect x="1244" y="671" width="116" height="25" rx="12" fill="#ecfdf3"/><circle cx="1260" cy="683" r="4" fill="#16a34a"/><text x="1273" y="688" class="pill-text" fill="#15803d">ว่าง</text>
+    <circle cx="352" cy="745" r="17" fill="#eff6ff"/><text x="352" y="750" text-anchor="middle" font-size="15" fill="#2563eb">⚿</text>
+    <text x="386" y="741" class="label">252</text><text x="386" y="761" class="small">ห้อง 252 · อาคาร 2 ชั้น 5</text>
+    <rect x="1212" y="732" width="148" height="25" rx="12" fill="#fff7ed"/><circle cx="1228" cy="744" r="4" fill="#ea580c"/><text x="1241" y="749" class="pill-text" fill="#c2410c">กำลังใช้งาน</text>
+    <circle cx="352" cy="806" r="17" fill="#eff6ff"/><text x="352" y="811" text-anchor="middle" font-size="15" fill="#2563eb">⚿</text>
+    <text x="386" y="802" class="label">253</text><text x="386" y="822" class="small">ห้อง 253 · อาคาร 2 ชั้น 5</text>
+    <rect x="1244" y="793" width="116" height="25" rx="12" fill="#ecfdf3"/><circle cx="1260" cy="805" r="4" fill="#16a34a"/><text x="1273" y="810" class="pill-text" fill="#15803d">ว่าง</text>
+  </g>
+  <text x="80" y="1080" class="frame-title">01 · Dashboard</text><text x="80" y="1105" class="small">หน้าหลัก · Quick actions, active borrowing, room status</text>
+
+  <!-- Screen 2: Rooms -->
+  <g id="frame-rooms" transform="translate(1616 150)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-rooms"/>
+    <text x="310" y="126" class="small">IT ROOM KEY MANAGEMENT SYSTEM</text>
+    <text x="310" y="166" class="heading">ห้องทั้งหมด</text>
+    <text x="310" y="194" class="body muted">ค้นหาและตรวจสอบสถานะห้องในวิทยาลัย</text>
+    <rect x="310" y="230" width="1085" height="58" rx="10" class="card"/>
+    <circle cx="341" cy="259" r="9" fill="none" stroke="#94a3b8" stroke-width="2"/><line x1="348" y1="266" x2="355" y2="273" stroke="#94a3b8" stroke-width="2"/>
+    <text x="371" y="265" class="body muted">ค้นหารหัสห้องหรือชื่อห้อง</text>
+    <rect x="310" y="313" width="1085" height="456" rx="12" class="card"/>
+    <text x="340" y="351" class="label">ห้อง / อาคาร</text><text x="790" y="351" class="label">ตำแหน่ง</text><text x="1200" y="351" class="label">สถานะ</text>
+    <line x1="310" y1="371" x2="1395" y2="371" class="line"/>
+    <g>
+      <circle cx="354" cy="420" r="22" fill="#eff6ff"/><text x="354" y="425" text-anchor="middle" class="label" fill="#2563eb">2</text>
+      <text x="392" y="416" class="label">251 · ห้องปฏิบัติการคอมพิวเตอร์</text><text x="392" y="439" class="small">รหัสห้อง 251</text><text x="790" y="425" class="body">อาคาร 2 · ชั้น 5</text>
+      <rect x="1192" y="407" width="130" height="28" rx="14" fill="#ecfdf3"/><circle cx="1209" cy="421" r="4" fill="#16a34a"/><text x="1222" y="426" class="pill-text" fill="#15803d">ว่าง</text><text x="1360" y="426" font-size="22" fill="#94a3b8">›</text>
+      <line x1="330" y1="466" x2="1375" y2="466" class="line"/>
+      <circle cx="354" cy="514" r="22" fill="#eff6ff"/><text x="354" y="519" text-anchor="middle" class="label" fill="#2563eb">2</text>
+      <text x="392" y="510" class="label">252 · ห้องปฏิบัติการเครือข่าย</text><text x="392" y="533" class="small">รหัสห้อง 252</text><text x="790" y="519" class="body">อาคาร 2 · ชั้น 5</text>
+      <rect x="1172" y="501" width="150" height="28" rx="14" fill="#fff7ed"/><circle cx="1189" cy="515" r="4" fill="#ea580c"/><text x="1202" y="520" class="pill-text" fill="#c2410c">กำลังใช้งาน</text><text x="1360" y="520" font-size="22" fill="#94a3b8">›</text>
+      <line x1="330" y1="560" x2="1375" y2="560" class="line"/>
+      <circle cx="354" cy="608" r="22" fill="#eff6ff"/><text x="354" y="613" text-anchor="middle" class="label" fill="#2563eb">2</text>
+      <text x="392" y="604" class="label">253 · ห้องปฏิบัติการซอฟต์แวร์</text><text x="392" y="627" class="small">รหัสห้อง 253</text><text x="790" y="613" class="body">อาคาร 2 · ชั้น 5</text>
+      <rect x="1192" y="595" width="130" height="28" rx="14" fill="#ecfdf3"/><circle cx="1209" cy="609" r="4" fill="#16a34a"/><text x="1222" y="614" class="pill-text" fill="#15803d">ว่าง</text><text x="1360" y="614" font-size="22" fill="#94a3b8">›</text>
+      <line x1="330" y1="654" x2="1375" y2="654" class="line"/>
+      <circle cx="354" cy="702" r="22" fill="#eff6ff"/><text x="354" y="707" text-anchor="middle" class="label" fill="#2563eb">3</text>
+      <text x="392" y="698" class="label">301 · ห้องประชุมฝ่ายไอที</text><text x="392" y="721" class="small">รหัสห้อง 301</text><text x="790" y="707" class="body">อาคาร 3 · ชั้น 1</text>
+      <rect x="1174" y="689" width="148" height="28" rx="14" fill="#fef2f2"/><circle cx="1191" cy="703" r="4" fill="#dc2626"/><text x="1204" y="708" class="pill-text" fill="#b42318">ปิดปรับปรุง</text><text x="1360" y="708" font-size="22" fill="#94a3b8">›</text>
+    </g>
+    <text x="340" y="748" class="small">แสดง 4 จาก 18 ห้อง</text>
+  </g>
+  <text x="1616" y="1080" class="frame-title">02 · Rooms</text><text x="1616" y="1105" class="small">ห้องทั้งหมด · Search, room location, availability states</text>
+
+  <!-- Screen 3: Room timetable -->
+  <g id="frame-timetable" transform="translate(3152 150)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-timetable"/>
+    <text x="310" y="126" class="small">ตารางการใช้ห้อง</text><text x="310" y="166" class="heading">ตารางประจำห้อง</text>
+    <text x="310" y="194" class="body muted">ตรวจสอบตารางเรียนและรายการจองในแต่ละห้อง</text>
+    <rect x="310" y="226" width="1085" height="76" rx="12" class="card"/>
+    <text x="338" y="254" class="label">สัปดาห์ที่ 2–8 พฤศจิกายน 2569</text>
+    <rect x="1210" y="241" width="42" height="36" rx="8" fill="#fff" stroke="#d9e2ec"/><text x="1231" y="265" text-anchor="middle" font-size="18">‹</text>
+    <rect x="1262" y="241" width="42" height="36" rx="8" fill="#fff" stroke="#d9e2ec"/><text x="1283" y="265" text-anchor="middle" font-size="18">›</text>
+    <rect x="1314" y="241" width="58" height="36" rx="8" fill="#eff6ff"/><text x="1343" y="264" text-anchor="middle" class="small" fill="#2563eb">วันนี้</text>
+    <rect x="310" y="324" width="1085" height="490" rx="12" class="card"/>
+    <rect x="310" y="324" width="1085" height="54" rx="12" fill="#f8fafc"/>
+    <text x="345" y="357" class="label">ห้อง</text><text x="520" y="357" class="label">จันทร์ 2</text><text x="684" y="357" class="label">อังคาร 3</text><text x="848" y="357" class="label">พุธ 4</text><text x="1012" y="357" class="label">พฤหัส 5</text><text x="1176" y="357" class="label">ศุกร์ 6</text>
+    <line x1="480" y1="324" x2="480" y2="814" class="line"/><line x1="644" y1="324" x2="644" y2="814" class="line"/><line x1="808" y1="324" x2="808" y2="814" class="line"/><line x1="972" y1="324" x2="972" y2="814" class="line"/><line x1="1136" y1="324" x2="1136" y2="814" class="line"/><line x1="1300" y1="324" x2="1300" y2="814" class="line"/>
+    <line x1="310" y1="378" x2="1395" y2="378" class="line"/><line x1="310" y1="486" x2="1395" y2="486" class="line"/><line x1="310" y1="594" x2="1395" y2="594" class="line"/><line x1="310" y1="702" x2="1395" y2="702" class="line"/>
+    <text x="345" y="425" class="label">ห้อง 251</text><text x="345" y="450" class="small">ชั้น 5 · อาคาร 2</text>
+    <rect x="492" y="393" width="140" height="70" rx="7" fill="#eff6ff"/><text x="502" y="415" class="label" fill="#1d4ed8">วิชาเครือข่าย</text><text x="502" y="438" class="small">09:00–12:00</text>
+    <rect x="822" y="393" width="140" height="70" rx="7" fill="#ecfdf3"/><text x="832" y="415" class="label" fill="#15803d">ว่าง</text><text x="832" y="438" class="small">จองเพื่อใช้งาน</text>
+    <text x="345" y="533" class="label">ห้อง 252</text><text x="345" y="558" class="small">ชั้น 5 · อาคาร 2</text>
+    <rect x="658" y="501" width="140" height="70" rx="7" fill="#eff6ff"/><text x="668" y="523" class="label" fill="#1d4ed8">ปฏิบัติการ IT</text><text x="668" y="546" class="small">13:00–16:00</text>
+    <rect x="1150" y="501" width="140" height="70" rx="7" fill="#fff7ed"/><text x="1160" y="523" class="label" fill="#c2410c">มีรายการจอง</text><text x="1160" y="546" class="small">10:00–11:30</text>
+    <text x="345" y="641" class="label">ห้อง 253</text><text x="345" y="666" class="small">ชั้น 5 · อาคาร 2</text>
+    <rect x="986" y="609" width="140" height="70" rx="7" fill="#eff6ff"/><text x="996" y="631" class="label" fill="#1d4ed8">พัฒนาซอฟต์แวร์</text><text x="996" y="654" class="small">09:00–12:00</text>
+    <text x="345" y="749" class="label">ห้อง 301</text><text x="345" y="774" class="small">ชั้น 1 · อาคาร 3</text>
+    <rect x="492" y="717" width="140" height="70" rx="7" fill="#f1f5f9"/><text x="502" y="739" class="label" fill="#64748b">ปิดปรับปรุง</text><text x="502" y="762" class="small">ไม่พร้อมให้บริการ</text>
+  </g>
+  <text x="3152" y="1080" class="frame-title">03 · Room timetable</text><text x="3152" y="1105" class="small">ตารางประจำห้อง · Week navigation, room schedule grid</text>
+
+  <!-- Screen 4: QR scan -->
+  <g id="frame-scan" transform="translate(80 1200)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-scan"/>
+    <text x="310" y="126" class="small">ค้นหาข้อมูลห้อง</text><text x="310" y="166" class="heading">สแกน QR Code</text>
+    <text x="310" y="194" class="body muted">สแกนรหัสประจำห้องเพื่อดูสถานะและขอใช้ห้อง</text>
+    <rect x="310" y="230" width="650" height="530" rx="14" class="card"/>
+    <rect x="370" y="275" width="530" height="390" rx="12" fill="#0f172a"/>
+    <rect x="403" y="308" width="464" height="324" rx="8" fill="#172554"/>
+    <path d="M405 365 V330 Q405 310 425 310 H460 M810 310 H845 Q865 310 865 330 V365 M405 575 V610 Q405 630 425 630 H460 M810 630 H845 Q865 630 865 610 V575" fill="none" stroke="#60a5fa" stroke-width="6"/>
+    <rect x="540" y="391" width="190" height="190" rx="5" fill="#ffffff"/>
+    <g fill="#172b4d">
+      <path d="M555 406h48v48h-48z M563 414v32h32v-32z M571 422h16v16h-16z"/>
+      <path d="M667 406h48v48h-48z M675 414v32h32v-32z M683 422h16v16h-16z"/>
+      <path d="M555 518h48v48h-48z M563 526v32h32v-32z M571 534h16v16h-16z"/>
+      <path d="M617 406h10v10h-10z M637 416h10v10h-10z M615 439h14v10h-14z M635 448h10v10h-10z M613 478h12v10h-12z M637 480h10v10h-10z M655 466h10v10h-10z M675 477h10v10h-10z M700 468h10v10h-10z M620 505h10v10h-10z M642 515h10v10h-10z M661 527h10v10h-10z M684 507h10v10h-10z M704 532h10v10h-10z M620 551h10v10h-10z M647 555h10v10h-10z M675 545h10v10h-10z M699 554h10v10h-10z"/>
+    </g>
+    <circle cx="635" cy="697" r="7" fill="#22c55e"/><text x="653" y="702" class="white" font-size="13">กล้องพร้อมใช้งาน</text>
+    <rect x="990" y="230" width="405" height="530" rx="14" class="card"/>
+    <text x="1022" y="276" class="subheading">วิธีใช้งาน</text>
+    <circle cx="1040" cy="324" r="14" fill="#eff6ff"/><text x="1040" y="329" text-anchor="middle" class="label" fill="#2563eb">1</text>
+    <text x="1067" y="321" class="label">อนุญาตให้ใช้กล้อง</text><text x="1067" y="343" class="small">เมื่อเบราว์เซอร์ร้องขอสิทธิ์</text>
+    <circle cx="1040" cy="388" r="14" fill="#eff6ff"/><text x="1040" y="393" text-anchor="middle" class="label" fill="#2563eb">2</text>
+    <text x="1067" y="385" class="label">เล็งกล้องไปที่ QR ห้อง</text><text x="1067" y="407" class="small">จัด QR ให้อยู่ในกรอบสแกน</text>
+    <circle cx="1040" cy="452" r="14" fill="#eff6ff"/><text x="1040" y="457" text-anchor="middle" class="label" fill="#2563eb">3</text>
+    <text x="1067" y="449" class="label">ตรวจสอบสถานะห้อง</text><text x="1067" y="471" class="small">ดูรายละเอียดก่อนส่งคำขอ</text>
+    <line x1="1022" y1="500" x2="1362" y2="500" class="line"/>
+    <text x="1022" y="538" class="label">มีปัญหาเกี่ยวกับกล้อง?</text><text x="1022" y="564" class="small">คุณสามารถค้นหาห้องจากรายการ</text>
+    <rect x="1022" y="589" width="340" height="42" rx="8" fill="#eff6ff"/><text x="1192" y="615" text-anchor="middle" class="label" fill="#2563eb">ค้นหาห้องทั้งหมด  →</text>
+    <text x="310" y="808" class="small">หมายเหตุ: การสแกนจะแสดงข้อมูลห้องและนำไปยังหน้ารายละเอียด</text>
+  </g>
+  <text x="80" y="2130" class="frame-title">04 · QR scan</text><text x="80" y="2155" class="small">สแกน QR · Camera state, help steps, fallback to room search</text>
+
+  <!-- Screen 5: Borrowings -->
+  <g id="frame-borrowings" transform="translate(1616 1200)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-borrowings"/>
+    <text x="310" y="126" class="small">ระบบบริหารการใช้ห้อง</text><text x="310" y="166" class="heading">รายการยืม-คืนห้อง</text>
+    <text x="310" y="194" class="body muted">ตรวจสอบ อนุมัติ และจัดการรายการใช้ห้อง</text>
+    <rect x="310" y="230" width="1085" height="56" rx="10" class="card"/>
+    <rect x="326" y="241" width="120" height="34" rx="7" fill="#eff6ff"/><text x="386" y="263" text-anchor="middle" class="label" fill="#2563eb">ทั้งหมด  12</text>
+    <text x="477" y="263" class="label muted">รออนุมัติ  3</text><text x="613" y="263" class="label muted">อนุมัติแล้ว  4</text><text x="763" y="263" class="label muted">กำลังใช้  2</text><text x="886" y="263" class="label muted">เสร็จสิ้น  3</text>
+    <rect x="310" y="308" width="1085" height="506" rx="12" class="card"/>
+    <text x="336" y="344" class="label">ผู้ขอ</text><text x="515" y="344" class="label">ห้อง</text><text x="700" y="344" class="label">ช่วงเวลา</text><text x="970" y="344" class="label">วัตถุประสงค์</text><text x="1193" y="344" class="label">สถานะ</text><text x="1350" y="344" class="label">จัดการ</text>
+    <line x1="310" y1="363" x2="1395" y2="363" class="line"/>
+    <g>
+      <circle cx="349" cy="407" r="17" fill="#dbeafe"/><text x="349" y="412" text-anchor="middle" class="label" fill="#1d4ed8">ส</text><text x="376" y="403" class="label">สมชาย ใจดี</text><text x="376" y="424" class="small">รหัส 65001</text>
+      <text x="515" y="403" class="label">ห้อง 251</text><text x="515" y="424" class="small">อาคาร 2 · ชั้น 5</text><text x="700" y="403" class="body">2 พ.ย. 09:00–12:00</text><text x="970" y="411" class="body">ทำโครงงาน</text>
+      <rect x="1180" y="391" width="112" height="26" rx="13" fill="#fff7ed"/><text x="1236" y="409" text-anchor="middle" class="pill-text" fill="#c2410c">รออนุมัติ</text><text x="1354" y="410" font-size="17" fill="#2563eb">•••</text>
+      <line x1="326" y1="449" x2="1378" y2="449" class="line"/>
+      <circle cx="349" cy="493" r="17" fill="#dbeafe"/><text x="349" y="498" text-anchor="middle" class="label" fill="#1d4ed8">พ</text><text x="376" y="489" class="label">พิมพ์ชนก แสงทอง</text><text x="376" y="510" class="small">รหัส 65018</text>
+      <text x="515" y="489" class="label">ห้อง 252</text><text x="515" y="510" class="small">อาคาร 2 · ชั้น 5</text><text x="700" y="489" class="body">2 พ.ย. 13:00–15:00</text><text x="970" y="497" class="body">ประชุมกลุ่ม</text>
+      <rect x="1180" y="477" width="112" height="26" rx="13" fill="#eff6ff"/><text x="1236" y="495" text-anchor="middle" class="pill-text" fill="#1d4ed8">อนุมัติแล้ว</text><text x="1354" y="496" font-size="17" fill="#2563eb">•••</text>
+      <line x1="326" y1="535" x2="1378" y2="535" class="line"/>
+      <circle cx="349" cy="579" r="17" fill="#dbeafe"/><text x="349" y="584" text-anchor="middle" class="label" fill="#1d4ed8">ว</text><text x="376" y="575" class="label">วรากร บุญมี</text><text x="376" y="596" class="small">รหัส 64129</text>
+      <text x="515" y="575" class="label">ห้อง 253</text><text x="515" y="596" class="small">อาคาร 2 · ชั้น 5</text><text x="700" y="575" class="body">2 พ.ย. 08:30–10:30</text><text x="970" y="583" class="body">เรียนชดเชย</text>
+      <rect x="1180" y="563" width="112" height="26" rx="13" fill="#fff7ed"/><text x="1236" y="581" text-anchor="middle" class="pill-text" fill="#c2410c">กำลังใช้</text><text x="1354" y="582" font-size="17" fill="#2563eb">•••</text>
+      <line x1="326" y1="621" x2="1378" y2="621" class="line"/>
+      <circle cx="349" cy="665" r="17" fill="#dbeafe"/><text x="349" y="670" text-anchor="middle" class="label" fill="#1d4ed8">น</text><text x="376" y="661" class="label">นภัสสร วงศ์ดี</text><text x="376" y="682" class="small">รหัส 64087</text>
+      <text x="515" y="661" class="label">ห้อง 301</text><text x="515" y="682" class="small">อาคาร 3 · ชั้น 1</text><text x="700" y="661" class="body">1 พ.ย. 14:00–16:00</text><text x="970" y="669" class="body">อบรมระบบ</text>
+      <rect x="1180" y="649" width="112" height="26" rx="13" fill="#ecfdf3"/><text x="1236" y="667" text-anchor="middle" class="pill-text" fill="#15803d">คืนแล้ว</text><text x="1354" y="668" font-size="17" fill="#2563eb">•••</text>
+    </g>
+    <text x="336" y="775" class="small">แสดงรายการ 1–4 จาก 12</text><text x="1360" y="775" text-anchor="end" class="small">‹  1  2  3  ›</text>
+  </g>
+  <text x="1616" y="2130" class="frame-title">05 · Borrowings</text><text x="1616" y="2155" class="small">รายการยืม-คืน · Role-aware request queue and status tabs</text>
+
+  <!-- Screen 6: History -->
+  <g id="frame-history" transform="translate(3152 1200)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-history"/>
+    <text x="310" y="126" class="small">รายการของฉัน</text><text x="310" y="166" class="heading">ประวัติการยืม-คืน</text>
+    <text x="310" y="194" class="body muted">แสดงเฉพาะรายการที่คุณเป็นผู้ยืม</text>
+    <rect x="310" y="230" width="1085" height="60" rx="10" class="card"/>
+    <text x="338" y="267" class="label">ช่วงเวลา</text><rect x="420" y="243" width="190" height="34" rx="7" fill="#ffffff" stroke="#d9e2ec"/><text x="436" y="265" class="small">1 ต.ค. 2569 – วันนี้</text>
+    <text x="650" y="267" class="label">สถานะ</text><rect x="718" y="243" width="150" height="34" rx="7" fill="#ffffff" stroke="#d9e2ec"/><text x="734" y="265" class="small">ทุกสถานะ  ▾</text>
+    <rect x="310" y="312" width="1085" height="476" rx="12" class="card"/>
+    <text x="340" y="350" class="label">รายการ</text><text x="830" y="350" class="label">วันที่ยืม</text><text x="1130" y="350" class="label">วันที่คืน</text><text x="1280" y="350" class="label">สถานะ</text>
+    <line x1="328" y1="370" x2="1378" y2="370" class="line"/>
+    <g>
+      <text x="340" y="411" class="label">BR-2026-0481 · ห้อง 251</text><text x="340" y="434" class="small">ห้องปฏิบัติการคอมพิวเตอร์</text><text x="830" y="421" class="body">30 ต.ค. 2569, 09:12</text><text x="1130" y="421" class="body">30 ต.ค. 2569, 11:58</text>
+      <rect x="1270" y="398" width="100" height="26" rx="13" fill="#ecfdf3"/><text x="1320" y="416" text-anchor="middle" class="pill-text" fill="#15803d">คืนแล้ว</text>
+      <line x1="328" y1="460" x2="1378" y2="460" class="line"/>
+      <text x="340" y="501" class="label">BR-2026-0467 · ห้อง 252</text><text x="340" y="524" class="small">ห้องปฏิบัติการเครือข่าย</text><text x="830" y="511" class="body">27 ต.ค. 2569, 13:05</text><text x="1130" y="511" class="body">27 ต.ค. 2569, 15:32</text>
+      <rect x="1270" y="488" width="100" height="26" rx="13" fill="#ecfdf3"/><text x="1320" y="506" text-anchor="middle" class="pill-text" fill="#15803d">คืนแล้ว</text>
+      <line x1="328" y1="550" x2="1378" y2="550" class="line"/>
+      <text x="340" y="591" class="label">BR-2026-0412 · ห้อง 253</text><text x="340" y="614" class="small">ห้องปฏิบัติการซอฟต์แวร์</text><text x="830" y="601" class="body">22 ต.ค. 2569, 08:42</text><text x="1130" y="601" class="body">—</text>
+      <rect x="1270" y="578" width="100" height="26" rx="13" fill="#fef2f2"/><text x="1320" y="596" text-anchor="middle" class="pill-text" fill="#b42318">เกินกำหนด</text>
+      <line x1="328" y1="640" x2="1378" y2="640" class="line"/>
+      <text x="340" y="681" class="label">BR-2026-0388 · ห้อง 251</text><text x="340" y="704" class="small">ห้องปฏิบัติการคอมพิวเตอร์</text><text x="830" y="691" class="body">18 ต.ค. 2569, 10:00</text><text x="1130" y="691" class="body">18 ต.ค. 2569, 12:14</text>
+      <rect x="1270" y="668" width="100" height="26" rx="13" fill="#ecfdf3"/><text x="1320" y="686" text-anchor="middle" class="pill-text" fill="#15803d">คืนแล้ว</text>
+    </g>
+    <text x="340" y="754" class="small">แสดง 4 จาก 26 รายการ</text>
+  </g>
+  <text x="3152" y="2130" class="frame-title">06 · Borrowing history</text><text x="3152" y="2155" class="small">ประวัติการยืม · Personal records, date/status filters, overdue state</text>
+
+  <!-- Screen 7: Room detail -->
+  <g id="frame-room-detail" transform="translate(80 2250)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-rooms"/>
+    <text x="310" y="126" class="small">ห้องทั้งหมด  /  รายละเอียดห้อง</text><text x="310" y="166" class="heading">251</text>
+    <text x="310" y="194" class="body muted">ห้องปฏิบัติการคอมพิวเตอร์</text>
+    <rect x="1240" y="137" width="130" height="28" rx="14" fill="#ecfdf3"/><circle cx="1257" cy="151" r="4" fill="#16a34a"/><text x="1270" y="156" class="pill-text" fill="#15803d">ว่าง</text>
+    <rect x="310" y="230" width="530" height="300" rx="12" class="card"/><text x="340" y="270" class="subheading">ข้อมูลห้อง</text>
+    <line x1="340" y1="289" x2="810" y2="289" class="line"/>
+    <text x="340" y="326" class="small">อาคาร</text><text x="600" y="326" class="label">2</text>
+    <text x="340" y="365" class="small">ชั้น</text><text x="600" y="365" class="label">5</text>
+    <text x="340" y="404" class="small">ประเภทห้อง</text><text x="600" y="404" class="label">ห้องปฏิบัติการ</text>
+    <text x="340" y="443" class="small">ความจุ</text><text x="600" y="443" class="label">40 คน</text>
+    <text x="340" y="482" class="small">จำนวนกุญแจ</text><text x="600" y="482" class="label">2 ดอก</text>
+    <rect x="860" y="230" width="535" height="300" rx="12" class="card"/><text x="890" y="270" class="subheading">สถานะการยืม</text>
+    <line x1="890" y1="289" x2="1365" y2="289" class="line"/>
+    <circle cx="910" cy="327" r="6" fill="#16a34a"/><text x="930" y="332" class="label">ห้องพร้อมให้บริการ</text>
+    <text x="890" y="369" class="body muted">ยังไม่มีรายการยืมที่กำลังดำเนินการ</text>
+    <text x="890" y="408" class="small">ก่อนจอง โปรดตรวจสอบตารางประจำห้อง</text>
+    <rect x="890" y="447" width="170" height="44" rx="8" fill="#2563eb"/><text x="975" y="475" text-anchor="middle" class="label white">ขอใช้ห้อง</text>
+    <text x="310" y="588" class="subheading">ตารางประจำห้อง</text><text x="310" y="614" class="small">กำหนดการใช้ห้อง</text>
+    <rect x="310" y="636" width="1085" height="180" rx="12" class="card"/>
+    <line x1="310" y1="696" x2="1395" y2="696" class="line"/><line x1="310" y1="756" x2="1395" y2="756" class="line"/>
+    <text x="340" y="673" class="label">จันทร์ · 09:00–12:00</text><text x="760" y="673" class="body">วิชาเครือข่าย</text><text x="1140" y="673" class="small">ปวช. 2/1</text>
+    <text x="340" y="733" class="label">พุธ · 13:00–16:00</text><text x="760" y="733" class="body">ปฏิบัติการระบบ</text><text x="1140" y="733" class="small">ปวส. 1/2</text>
+    <text x="340" y="793" class="label">ศุกร์ · 09:00–11:00</text><text x="760" y="793" class="body">พัฒนาซอฟต์แวร์</text><text x="1140" y="793" class="small">ปวช. 3/1</text>
+  </g>
+  <text x="80" y="3180" class="frame-title">07 · Room detail</text><text x="80" y="3205" class="small">รายละเอียดห้อง · Availability, room facts, active borrowing, recurring schedule</text>
+
+  <!-- Screen 8: Booking form -->
+  <g id="frame-booking-form" transform="translate(1616 2250)">
+    <rect width="1440" height="900" rx="14" class="frame"/>
+    <use xlink:href="#shell"/><use xlink:href="#active-borrowings"/>
+    <text x="310" y="126" class="small">คำขอใช้ห้อง</text><text x="310" y="166" class="heading">สร้างรายการยืมห้อง</text>
+    <text x="310" y="194" class="body muted">เลือกห้องและช่วงเวลา ระบบจะตรวจสอบตารางและรายการจองซ้ำให้</text>
+    <rect x="310" y="230" width="760" height="590" rx="12" class="card"/>
+    <text x="342" y="274" class="subheading">รายละเอียดการใช้ห้อง</text><text x="342" y="300" class="small">กรอกข้อมูลให้ครบก่อนส่งคำขออนุมัติ</text>
+    <text x="342" y="345" class="label">ห้องที่ต้องการใช้ <tspan fill="#b42318">*</tspan></text>
+    <rect x="342" y="360" width="696" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="358" y="388" class="body">251 · ห้องปฏิบัติการคอมพิวเตอร์</text><text x="1015" y="388" text-anchor="end" class="body muted">▾</text>
+    <text x="342" y="442" class="label">วันและเวลาเริ่มต้น <tspan fill="#b42318">*</tspan></text>
+    <rect x="342" y="457" width="332" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="358" y="485" class="body">02/11/2569</text>
+    <rect x="690" y="457" width="348" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="706" y="485" class="body">09:00</text>
+    <text x="342" y="539" class="label">วันและเวลาสิ้นสุด <tspan fill="#b42318">*</tspan></text>
+    <rect x="342" y="554" width="332" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="358" y="582" class="body">02/11/2569</text>
+    <rect x="690" y="554" width="348" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="706" y="582" class="body">12:00</text>
+    <text x="342" y="636" class="label">วัตถุประสงค์ <tspan fill="#b42318">*</tspan></text>
+    <rect x="342" y="651" width="696" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="358" y="679" class="body muted">เช่น ทำโครงงาน / ประชุมกลุ่ม</text>
+    <text x="342" y="731" class="label">จำนวนผู้เข้าร่วม</text><rect x="342" y="746" width="180" height="44" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="358" y="774" class="body">1 คน</text>
+    <rect x="1100" y="230" width="295" height="260" rx="12" class="card"/>
+    <text x="1130" y="270" class="subheading">ก่อนส่งคำขอ</text><line x1="1130" y1="289" x2="1365" y2="289" class="line"/>
+    <circle cx="1140" cy="322" r="5" fill="#2563eb"/><text x="1156" y="327" class="small">ตรวจสอบตารางห้องก่อนใช้</text>
+    <circle cx="1140" cy="359" r="5" fill="#2563eb"/><text x="1156" y="364" class="small">รอผู้ดูแลอนุมัติคำขอ</text>
+    <circle cx="1140" cy="396" r="5" fill="#2563eb"/><text x="1156" y="401" class="small">คืนกุญแจหลังใช้งานเสร็จ</text>
+    <rect x="1100" y="510" width="295" height="120" rx="12" fill="#eff6ff"/>
+    <text x="1124" y="545" class="label" fill="#1d4ed8">สถานะห้อง 251: ว่าง</text><text x="1124" y="571" class="small">ระบบจะตรวจสอบเวลาซ้ำอีกครั้ง</text><text x="1124" y="593" class="small">เมื่อส่งคำขอ</text>
+    <rect x="342" y="810" width="155" height="42" rx="8" fill="#2563eb"/><text x="419" y="837" text-anchor="middle" class="label white">ส่งคำขอ</text>
+    <rect x="510" y="810" width="110" height="42" rx="8" fill="#ffffff" stroke="#cbd5e1"/><text x="565" y="837" text-anchor="middle" class="label">ยกเลิก</text>
+  </g>
+  <text x="1616" y="3180" class="frame-title">08 · Booking form</text><text x="1616" y="3205" class="small">สร้างรายการยืมห้อง · Required fields, time range, policy guidance</text>
+
+  <!-- Screen 9: Login -->
+  <g id="frame-login" transform="translate(3152 2250)">
+    <rect width="1440" height="900" rx="14" fill="#ffffff" stroke="#d7e0eb"/>
+    <path d="M14 0 H700 V900 H14 Q0 900 0 886 V14 Q0 0 14 0" fill="#102a43"/>
+    <circle cx="600" cy="145" r="200" fill="#2b5b89" opacity=".24"/><circle cx="600" cy="145" r="250" fill="none" stroke="#ffffff" stroke-opacity=".1"/>
+    <rect x="92" y="104" width="58" height="58" rx="16" fill="#ffffff"/><text x="121" y="144" text-anchor="middle" font-size="30" font-weight="800" fill="#1752a0">K</text>
+    <text x="92" y="364" font-size="12" font-weight="700" letter-spacing="2" fill="#9eb7d0">THANBURI COMMERCIAL COLLEGE</text>
+    <text x="92" y="442" font-size="68" font-weight="750" letter-spacing="-2" fill="#ffffff">IT-KMS</text>
+    <text x="92" y="490" font-size="21" fill="#d2dfec">ระบบบริหารจัดการกุญแจห้องปฏิบัติการ</text>
+    <text x="92" y="760" font-size="15" fill="#a9bfd5">จัดการห้องและกุญแจได้ในที่เดียว</text>
+    <text x="850" y="182" class="small" font-weight="700" letter-spacing="1.5">ยินดีต้อนรับ</text>
+    <text x="850" y="232" font-size="32" font-weight="700">เข้าสู่ระบบ</text>
+    <text x="850" y="263" class="body muted">กรอกบัญชีผู้ใช้เพื่อดำเนินการต่อ</text>
+    <text x="850" y="330" class="label">ชื่อผู้ใช้หรืออีเมล</text><rect x="850" y="346" width="390" height="50" rx="8" fill="#ffffff" stroke="#dce4ed"/><text x="868" y="377" class="body" fill="#a2adba">กรอกชื่อผู้ใช้หรืออีเมล</text>
+    <text x="850" y="438" class="label">รหัสผ่าน</text><rect x="850" y="454" width="390" height="50" rx="8" fill="#ffffff" stroke="#dce4ed"/><text x="868" y="485" class="body" fill="#a2adba">กรอกรหัสผ่าน</text><text x="1210" y="485" class="body muted">◉</text>
+    <rect x="850" y="532" width="390" height="52" rx="8" fill="#2363c8"/><text x="875" y="565" class="label white">เข้าสู่ระบบ</text><text x="1215" y="565" text-anchor="end" class="white" font-size="20">→</text>
+    <circle cx="865" cy="635" r="10" fill="#ecfdf3"/><text x="865" y="640" text-anchor="middle" font-size="12" fill="#15803d">✓</text>
+    <text x="885" y="640" class="small">ระบบสำหรับนักเรียน/นักศึกษาและบุคลากร</text><text x="885" y="660" class="small">วิทยาลัยพณิชยการธนบุรี</text>
+    <text x="850" y="832" class="small">IT Room Key Management System  ·  © 2026</text>
+  </g>
+  <text x="3152" y="3180" class="frame-title">09 · Sign in</text><text x="3152" y="3205" class="small">เข้าสู่ระบบ · Existing product branding and credential form</text>
+</svg>

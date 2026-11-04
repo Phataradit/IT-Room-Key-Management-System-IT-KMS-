@@ -1,16 +1,50 @@
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
+import { initialCourses } from "./course-catalog.mjs";
 
 const prisma = new PrismaClient();
-const passwordHash = await bcrypt.hash("Admin123!", 12);
-const demoPasswordHashes = {
-  admin: passwordHash,
-  teacher: await bcrypt.hash("Teacher123!", 12),
-  student: await bcrypt.hash("Student123!", 12),
-};
+
+async function seedCourses() {
+  const codes = initialCourses.map(({ courseCode }) => courseCode);
+  if (new Set(codes).size !== initialCourses.length) {
+    throw new Error("Course seed contains duplicate course codes");
+  }
+
+  const courses = await Promise.all(initialCourses.map((course) => prisma.course.upsert({
+    where: { courseCode: course.courseCode },
+    // The checked-in catalogue is the source of truth for these seed records.
+    update: { courseName: course.courseName, isActive: true },
+    create: { ...course, isActive: true },
+    select: { id: true, courseCode: true },
+  })));
+
+  await Promise.all(courses.map((course) => prisma.roomSchedule.updateMany({
+    where: { courseCode: course.courseCode, courseId: null },
+    data: { courseId: course.id },
+  })));
+
+  const count = await prisma.course.count({ where: { courseCode: { in: codes } } });
+  if (count !== initialCourses.length) {
+    throw new Error(`Expected ${initialCourses.length} seeded courses, found ${count}`);
+  }
+  return count;
+}
 
 async function main() {
+  const courseCount = await seedCourses();
+  if (process.argv.includes("--courses-only")) {
+    console.info(`Course seed complete: ${courseCount} courses verified in PostgreSQL.`);
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash("Admin123!", 12);
+  const demoPasswordHashes = {
+    admin: passwordHash,
+    teacher: await bcrypt.hash("Teacher123!", 12),
+    student: await bcrypt.hash("Student123!", 12),
+  };
+
   await prisma.user.updateMany({
     where: { username: "schoolstudent", deletedAt: null },
     data: { status: "INACTIVE", deletedAt: new Date() },
@@ -221,7 +255,7 @@ async function main() {
     });
   }
 
-  console.info("Seed complete. Demo accounts: admin, teacher, student.");
+  console.info(`Seed complete. ${courseCount} courses verified. Demo accounts: admin, teacher, student.`);
 }
 
 main()

@@ -307,11 +307,16 @@ export async function createRoomSchedule(
       return { conflict } as const;
     }
     const teacherName = await validateTeacher(tx, input);
+    const course = input.courseCode
+      ? await tx.course.findFirst({ where: { courseCode: input.courseCode, isActive: true }, select: { id: true, courseName: true } })
+      : null;
     const schedule = await tx.roomSchedule.create({
       data: {
         ...input,
         teacherId: input.teacherId ?? null,
         teacherName,
+        courseId: course?.id ?? null,
+        subject: course?.courseName ?? input.subject,
         courseCode: input.courseCode || null,
         effectiveFrom: asDate(input.effectiveFrom),
         effectiveTo: asDate(input.effectiveTo),
@@ -363,12 +368,17 @@ export async function updateRoomSchedule(
       return { conflict } as const;
     }
     const teacherName = await validateTeacher(tx, input);
+    const course = input.courseCode
+      ? await tx.course.findFirst({ where: { courseCode: input.courseCode, isActive: true }, select: { id: true, courseName: true } })
+      : null;
     const updated = await tx.roomSchedule.update({
       where: { id: current.id },
       data: {
         ...input,
         teacherId: input.teacherId ?? null,
         teacherName,
+        courseId: course?.id ?? null,
+        subject: course?.courseName ?? input.subject,
         courseCode: input.courseCode || null,
         effectiveFrom: asDate(input.effectiveFrom),
         effectiveTo: asDate(input.effectiveTo),

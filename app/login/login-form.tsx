@@ -23,7 +23,11 @@ export function LoginForm() {
 
     setLoading(false);
     if (!result || result.error) {
-      setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง หรือบัญชีถูกระงับ");
+      if (result?.error === "DatabaseError") {
+        setError("ระบบไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+      } else {
+        setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง หรือบัญชีถูกระงับ");
+      }
       return;
     }
 

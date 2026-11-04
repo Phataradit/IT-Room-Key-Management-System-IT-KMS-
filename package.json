@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "start:lan": "next start --hostname 0.0.0.0",
     "lint": "eslint",
@@ -13,24 +14,37 @@
     "notifications:run": "node --env-file=.env scripts/run-room-notification-job.mjs",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:seed-courses": "node prisma/seed.mjs --courses-only",
+    "db:verify-courses": "node scripts/verify-course-catalog.mjs",
+    "api:verify-courses": "node --env-file=.env scripts/verify-course-api.mjs",
+    "api:verify-pdf-preview": "node --env-file=.env scripts/verify-live-pdf-preview.mjs",
+    "api:verify-pdf-import": "node --env-file=.env scripts/verify-live-pdf-import.mjs",
+    "browser:verify-courses": "node scripts/verify-courses-browser.mjs",
+    "pdf:verify-import": "node --env-file=.env --experimental-strip-types scripts/verify-pdf-course-import.mjs",
+    "db:check": "node --env-file=.env scripts/check-db-health.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^6.3.4",
+    "@neon/config": "^1.9.5",
+    "@neon/env": "^1.6.6",
     "@prisma/client": "^6.19.3",
     "@tesseract.js-data/eng": "^1.0.0",
     "@tesseract.js-data/tha": "^1.0.0",
     "@zxing/browser": "^0.2.1",
     "antd": "^6.6.5",
     "bcryptjs": "^3.0.3",
-    "next": "16.4.0",
+    "next": "16.4.2",
     "next-auth": "^4.24.15",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"
+  },
+  "overrides": {
+    "deepmerge-ts": "^8.0.0"
   },
   "devDependencies": {
     "@napi-rs/canvas": "^1.0.10",
@@ -39,7 +53,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.1",
     "pdfjs-dist": "^6.4.299",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",

@@ -5,6 +5,7 @@ import { auditRequest, unauthorizedResponse } from "@/lib/borrowings/http";
 import { prisma } from "@/lib/db/prisma";
 import { roomScheduleInputSchema } from "@/lib/room-timetable/schemas";
 import { createRoomSchedule, RoomScheduleError } from "@/lib/room-timetable/service";
+import { prepareTeacherImportFields } from "@/lib/room-timetable/teacher-review.mjs";
 
 const importRowSchema = z.object({
   sourcePage: z.number().int().positive().max(100),
@@ -30,6 +31,8 @@ const importRowSchema = z.object({
     courseCode: z.string().nullable(),
     subject: z.string().nullable(),
     teacherName: z.string().nullable(),
+    teacherNameCandidate: z.string().nullable().optional(),
+    teacherNameConfirmed: z.boolean().optional(),
     className: z.string().nullable(),
     dayOfWeek: z.nativeEnum(DayOfWeek).nullable(),
     startTime: z.string().nullable(),
@@ -45,6 +48,8 @@ const importRowSchema = z.object({
   courseCode: z.string().trim().max(50).nullable(),
   subject: z.string().trim().max(200).nullable(),
   teacherName: z.string().trim().max(200).nullable(),
+  teacherNameCandidate: z.string().trim().max(200).nullable(),
+  teacherNameConfirmed: z.boolean(),
   className: z.string().trim().max(100).nullable(),
   semester: z.string().trim().max(20).nullable(),
   academicYear: z.string().trim().max(20).nullable(),
@@ -56,6 +61,9 @@ const importRowSchema = z.object({
 }).refine((row) => !row.effectiveTo || !row.effectiveFrom || row.effectiveFrom <= row.effectiveTo, {
   path: ["effectiveTo"],
   message: "วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่ม",
+}).refine((row) => row.teacherNameConfirmed || row.teacherName === null, {
+  path: ["teacherName"],
+  message: "ชื่อครูที่ยังไม่ยืนยันต้องเก็บเป็นข้อมูลรอตรวจสอบเท่านั้น",
 });
 
 const importSchema = z.object({
@@ -118,8 +126,27 @@ export async function POST(request: Request) {
           results.push({ sourcePage: row.sourcePage, sourceCellKey: row.sourceCellKey, status: "FAILED", message: "ไม่พบห้องหรือห้องปิดใช้งานแล้ว" });
           continue;
         }
+        const course = row.courseCode
+          ? await prisma.course.findFirst({
+            where: { courseCode: row.courseCode, isActive: true },
+            select: { courseCode: true, courseName: true },
+          })
+          : null;
+        if (!course) {
+          results.push({
+            sourcePage: row.sourcePage,
+            sourceCellKey: row.sourceCellKey,
+            status: "FAILED",
+            message: row.courseCode ? "ไม่พบรหัสวิชานี้ใน Course Master" : "กรุณาระบุรหัสวิชาก่อนนำเข้า",
+          });
+          continue;
+        }
+        const teacherFields = prepareTeacherImportFields(row);
         const scheduleInput = roomScheduleInputSchema.parse({
           ...row,
+          courseCode: course.courseCode,
+          subject: course.courseName,
+          teacherName: teacherFields.teacherName,
           teacherId: null,
           status: "ACTIVE",
           notes: null,
@@ -133,7 +160,7 @@ export async function POST(request: Request) {
           sourceCellText: row.sourceCellText,
           sourceBounds: row.sourceBounds,
           sourceWords: row.sourceWords,
-          sourceStructured: row.sourceStructured,
+          sourceStructured: teacherFields.sourceStructured,
           sourceBuilding: row.sourceBuilding,
           sourceConfidence: row.sourceConfidence,
         });

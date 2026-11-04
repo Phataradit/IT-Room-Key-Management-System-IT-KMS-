@@ -4,8 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { createCanvas, type Canvas } from "@napi-rs/canvas";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-import { createWorker, type Worker } from "tesseract.js";
+import { createWorker, PSM, type Worker } from "tesseract.js";
 import { DayOfWeek } from "@prisma/client";
+import { parseCourseCatalogRow } from "./course-catalog.mjs";
 
 const maximumUploadBytes = Number(process.env.NEXT_PUBLIC_ROOM_SCHEDULE_IMPORT_MAX_BYTES ?? 25 * 1024 * 1024);
 const maximumPages = Number(process.env.NEXT_PUBLIC_ROOM_SCHEDULE_IMPORT_MAX_PAGES ?? 100);
@@ -110,6 +111,8 @@ export type RoomSchedulePdfPreviewRow = {
   courseCode: string | null;
   subject: string | null;
   teacherName: string | null;
+  teacherNameCandidate: string | null;
+  teacherNameConfirmed: boolean;
   className: string | null;
   semester: string | null;
   academicYear: string | null;
@@ -144,6 +147,16 @@ function normalizeDigits(value: string) {
 
 function compact(value: string) {
   return normalizeDigits(value).replace(/\s+/g, "").replace(/[|()[\]{}]/g, "");
+}
+
+/**
+ * Course codes sometimes arrive from the PDF text layer as separate tokens
+ * (for example `12345 - 6789`) or with a typographic dash.  Keep one
+ * canonical representation so the code in a timetable cell can be matched
+ * reliably with the course catalogue elsewhere in the same PDF.
+ */
+function courseCodeFromText(value: string) {
+  return parseCourseCatalogRow(value)?.courseCode ?? null;
 }
 
 function normalizeWord(word: PdfWord, width: number, height: number): NormalizedPdfWord {
@@ -306,6 +319,56 @@ async function recognizeCropWords(
   }));
 }
 
+async function recognizeCourseCatalogWords(
+  worker: Worker,
+  canvas: Canvas,
+  grid: NonNullable<ReturnType<typeof detectGrid>>,
+) {
+  const left = Math.round(canvas.width * 0.27);
+  const right = Math.round(canvas.width * 0.97);
+  const firstY = Math.round(canvas.height * 0.04);
+  const lastY = Math.min(grid.yBoundaries[0] - 2, Math.round(canvas.height * 0.42));
+  const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+  const scores = Array.from({ length: Math.max(0, lastY - firstY) }, (_, index) => {
+    const y = firstY + index;
+    let score = 0;
+    for (let x = left; x < right; x += 1) {
+      const offset = (y * canvas.width + x) * 4;
+      if (Math.max(pixels[offset], pixels[offset + 1], pixels[offset + 2]) < 155) score += 1;
+    }
+    return score;
+  });
+  const rowBoundaries = groupPeaks(
+    scores,
+    Math.round((right - left) * 0.25),
+    Math.max(3, Math.round(canvas.height * 0.003)),
+  ).map(({ position }) => position + firstY);
+  const columns = [
+    { x: canvas.width * 0.27, width: canvas.width * 0.36 },
+    { x: canvas.width * 0.65, width: canvas.width * 0.32 },
+  ];
+  const words: PdfWord[] = [];
+  await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK });
+  try {
+    for (let index = 0; index < rowBoundaries.length - 1; index += 1) {
+      const top = rowBoundaries[index] + 2;
+      const height = rowBoundaries[index + 1] - rowBoundaries[index] - 4;
+      if (height < canvas.height * 0.018 || height > canvas.height * 0.06) continue;
+      for (const column of columns) {
+        words.push(...await recognizeCropWords(worker, canvas, {
+          x: column.x,
+          y: top,
+          width: column.width,
+          height,
+        }));
+      }
+    }
+  } finally {
+    await worker.setParameters({ tessedit_pageseg_mode: PSM.AUTO });
+  }
+  return words;
+}
+
 function findDayLabel(words: PdfWord[], leftBoundary: number, top: number, bottom: number, height: number) {
   const labelWords = words
     .filter((word) => (word.x0 + word.x1) / 2 < leftBoundary && (word.y0 + word.y1) / 2 >= top && (word.y0 + word.y1) / 2 < bottom)
@@ -423,33 +486,83 @@ function extractCourseCatalog(words: PdfWord[], grid: NonNullable<ReturnType<typ
   const catalog = new Map<string, CourseCatalogEntry>();
   for (const codeWord of words) {
     const y = (codeWord.y0 + codeWord.y1) / 2;
-    if (y >= grid.yBoundaries[0] * 0.78 || codeWord.x0 > grid.width * 0.62) continue;
-    const code = normalizeDigits(codeWord.text).match(/\b\d{5}-\d{4}\b/)?.[0];
+    // The course list can occupy the full header area immediately above the
+    // timetable grid, so don't truncate the searchable area at an arbitrary
+    // fraction of the page.
+    if (y >= grid.yBoundaries[0]) continue;
+    // Some PDFs split a course code across separate text items. Rebuild the
+    // row before matching so `31910`, `-`, and `2005` still resolve as one code.
+    const rowWords = words
+      .filter((word) => Math.abs((word.y0 + word.y1) / 2 - y) < grid.height * 0.012)
+      .sort((left, right) => left.x0 - right.x0);
+    const rowText = rowWords.map((word) => word.text).join(" ");
+    const parsedRow = parseCourseCatalogRow(rowText);
+    const code = parsedRow?.courseCode ?? null;
     if (!code || catalog.has(code)) continue;
-    const sameRowWords = words
-      .filter((word) => {
+    const codeStart = parsedRow?.codeStart ?? -1;
+    const codeEnd = codeStart + (parsedRow?.codeLength ?? 0);
+    let offset = 0;
+    let codeAnchor: PdfWord | undefined;
+    let codeEndX = codeWord.x1;
+    for (const word of rowWords) {
+      const start = offset;
+      const end = start + normalizeDigits(word.text).length;
+      if (start <= codeStart && end > codeStart) codeAnchor = word;
+      if (start < codeEnd && end > codeStart) codeEndX = word.x1;
+      offset = end + 1;
+    }
+    if (codeAnchor !== codeWord) continue;
+    if (catalog.has(code)) continue;
+    // A PDF text item can contain both the code and its title, so deriving
+    // the title only from neighboring text items drops valid names. Use the
+    // complete row and remove just the matched code, whether it appears at
+    // the beginning, middle, or end of the line.
+    const subjectWords = rowWords.filter((word) =>
+      word.x0 >= codeEndX - 1
+      && word.x0 < codeWord.x0 + grid.width * 0.31
+      && /[\p{L}\p{M}]/u.test(word.text));
+    const isOcrRow = subjectWords.some((word) => word.source === "OCR");
+    const rowSubject = subjectWords.map((word) => word.text.trim()).join(isOcrRow ? "" : " ").trim().normalize("NFKC");
+    let subject = rowSubject || parsedRow?.subject || "";
+    let catalogWords = rowWords;
+    if (!subject) {
+      // Some PDFs place each course title on the line directly below its
+      // code. Look for the nearest readable text row in the header, while
+      // excluding rows that are actually another course-code entry.
+      const maxGap = Math.max(grid.height * 0.045, (codeWord.y1 - codeWord.y0) * 3);
+      const belowRows = new Map<number, PdfWord[]>();
+      for (const word of words) {
         const wordY = (word.y0 + word.y1) / 2;
-        return Math.abs(wordY - y) < grid.height * 0.012
-          && word.x0 >= codeWord.x0
-          && word.x0 < codeWord.x0 + grid.width * 0.42
-          && /[\p{L}]/u.test(word.text)
-          && !/\d{5}-\d{4}/.test(word.text);
-      })
-      .sort((left, right) => left.x0 - right.x0)
-      .filter((word) => word.text.trim());
-    const subject = sameRowWords.map((word) => word.text.trim()).join(" ").trim();
-    const rowWords = [codeWord, ...sameRowWords];
+        const gap = wordY - y;
+        if (gap <= 0 || gap > maxGap || wordY >= grid.yBoundaries[0]) continue;
+        const lineY = Math.round(wordY / Math.max(2, grid.height * 0.006));
+        belowRows.set(lineY, [...(belowRows.get(lineY) ?? []), word]);
+      }
+      const nearbyTitle = [...belowRows.values()]
+        .map((lineWords) => lineWords.sort((left, right) => left.x0 - right.x0))
+        .map((lineWords) => ({
+          words: lineWords,
+          text: lineWords.map((word) => word.text).join(" ").trim(),
+          y: lineWords.reduce((sum, word) => sum + (word.y0 + word.y1) / 2, 0) / lineWords.length,
+        }))
+        .filter((line) => /[\p{L}]/u.test(line.text) && !/\d{5}\s*[-–—]\s*\d{4}/.test(normalizeDigits(line.text)))
+        .sort((left, right) => Math.abs(left.y - y) - Math.abs(right.y - y))[0];
+      if (nearbyTitle) {
+        subject = nearbyTitle.text;
+        catalogWords = [...rowWords, ...nearbyTitle.words];
+      }
+    }
     const bounds = {
-      x: Math.min(...rowWords.map((word) => word.x0)) / grid.width,
-      y: Math.min(...rowWords.map((word) => word.y0)) / grid.height,
-      width: (Math.max(...rowWords.map((word) => word.x1)) - Math.min(...rowWords.map((word) => word.x0))) / grid.width,
-      height: (Math.max(...rowWords.map((word) => word.y1)) - Math.min(...rowWords.map((word) => word.y0))) / grid.height,
+      x: Math.min(...catalogWords.map((word) => word.x0)) / grid.width,
+      y: Math.min(...catalogWords.map((word) => word.y0)) / grid.height,
+      width: (Math.max(...catalogWords.map((word) => word.x1)) - Math.min(...catalogWords.map((word) => word.x0))) / grid.width,
+      height: (Math.max(...catalogWords.map((word) => word.y1)) - Math.min(...catalogWords.map((word) => word.y0))) / grid.height,
     };
-    const confidences = rowWords.flatMap((word) => word.confidence === null ? [] : [word.confidence]);
+    const confidences = catalogWords.flatMap((word) => word.confidence === null ? [] : [word.confidence]);
     catalog.set(code, {
       courseCode: code,
       subject: subject || null,
-      sourceText: rowWords.map((word) => word.text).join(" "),
+      sourceText: [code, subject].filter(Boolean).join(" "),
       confidence: confidences.length
         ? Math.round(confidences.reduce((sum, value) => sum + value, 0) / confidences.length)
         : null,
@@ -486,10 +599,11 @@ function makePageCells(
   roomCode: string | null,
   roomSource: RoomSchedulePdfPreviewRow["roomSource"],
   page: number,
+  catalogWords: PdfWord[] = words,
 ): { cells: RoomSchedulePdfCell[]; rows: RoomSchedulePdfPreviewRow[]; courseCatalog: CourseCatalogEntry[] } {
   const cells: RoomSchedulePdfCell[] = [];
   const rows: RoomSchedulePdfPreviewRow[] = [];
-  const courseCatalog = extractCourseCatalog(words, grid);
+  const courseCatalog = extractCourseCatalog(catalogWords, grid);
   const detectedDays = Array.from({ length: 7 }, (_, dayIndex) =>
     findDayLabel(words, grid.xBoundaries[0], grid.yBoundaries[dayIndex], grid.yBoundaries[dayIndex + 1], grid.height));
   const hasDetectedDay = detectedDays.some(Boolean);
@@ -559,8 +673,7 @@ function makePageCells(
       cells.push(cell);
       if (cell.empty) continue;
 
-      const compactText = normalizeDigits(sourceCellText).replace(/\s+/g, "");
-      const courseCode = compactText.match(/\d{5}-\d{4}/)?.[0] ?? null;
+      const courseCode = courseCodeFromText(sourceCellText);
       const rawGroupCode = sourceLines
         .filter((line) => !/\d{5}-\d{4}/.test(normalizeDigits(line)))
         .map((line) => normalizeDigits(line).replace(/\s+/g, "").match(/(?:[ก-๙A-Za-z]{1,8}\.|\.?)\d{1,3}/u)?.[0] ?? null)
@@ -599,6 +712,8 @@ function makePageCells(
       courseCode,
       subject: catalogEntry?.subject ?? null,
       teacherName: null,
+      teacherNameCandidate: teacherLine || null,
+      teacherNameConfirmed: false,
       className: groupCode,
       semester: header.semester,
       academicYear: header.academicYear,
@@ -720,6 +835,7 @@ export async function inspectRoomSchedulePdf(
         }
         onProgress({ page: pageNumber, pageCount, status: "EXTRACTING_CELLS" });
         let extractionWords = words;
+        let courseCatalogWords: PdfWord[] | null = null;
         if (grid && roomSource === "OCR" && worker) {
           const roomCrop = await recognizeCropWords(worker, canvas, {
             x: canvas.width * 0.04,
@@ -728,15 +844,9 @@ export async function inspectRoomSchedulePdf(
             height: canvas.height * 0.18,
           });
           extractionWords = [...extractionWords, ...roomCrop];
-        }
-        if (roomSource === "OCR" && worker) {
-          const courseCrop = await recognizeCropWords(worker, canvas, {
-            x: canvas.width * 0.25,
-            y: canvas.height * 0.04,
-            width: canvas.width * 0.72,
-            height: canvas.height * 0.34,
-          });
-          extractionWords = [...extractionWords, ...courseCrop];
+          const courseRows = await recognizeCourseCatalogWords(worker, canvas, grid);
+          courseCatalogWords = courseRows;
+          extractionWords = [...extractionWords, ...courseRows];
         }
         extractionWords = deduplicateWords(extractionWords);
         if (!grid) {
@@ -782,6 +892,7 @@ export async function inspectRoomSchedulePdf(
           detectedRoom.value,
           detectedRoom.source,
           pageNumber,
+          courseCatalogWords ?? extractionWords,
         );
         if (extracted.rows.some((row) => !row.startTime || !row.endTime)) {
           pageWarnings.push({ page: pageNumber, message: "อ่านช่วงเวลาของบางรายการไม่ได้ กรุณาตรวจและแก้เวลาแต่ละรายการก่อนนำเข้า" });
@@ -794,7 +905,12 @@ export async function inspectRoomSchedulePdf(
         }
         rows.push(...extracted.rows);
         for (const course of extracted.courseCatalog) {
-          if (!courseCatalog.has(course.courseCode)) courseCatalog.set(course.courseCode, course);
+          const existing = courseCatalog.get(course.courseCode);
+          // A later page can contain the actual course name when an earlier
+          // occurrence only yielded its code. Prefer the usable catalogue row.
+          if (!existing || (!existing.subject && course.subject)) {
+            courseCatalog.set(course.courseCode, course);
+          }
         }
         pages.push({
           page: pageNumber,
@@ -830,6 +946,23 @@ export async function inspectRoomSchedulePdf(
     await loadingTask.destroy();
   }
 
+  const resolvedCourseCatalog = [...courseCatalog.values()];
+  const courseNames = new Map(
+    resolvedCourseCatalog.flatMap((course) => course.subject
+      ? [[course.courseCode, course.subject] as const]
+      : []),
+  );
+  // The catalogue is commonly printed on a separate page from the room
+  // timetable. Resolve names only after every page has been read.
+  const resolvedRows = rows.map((row) => {
+    const subject = row.courseCode ? courseNames.get(row.courseCode) ?? row.subject : row.subject;
+    return {
+      ...row,
+      subject,
+      sourceStructured: { ...row.sourceStructured, subject },
+    };
+  });
+
   return {
     fileName: path.basename(fileName).slice(0, 200),
     fileHash,
@@ -838,9 +971,9 @@ export async function inspectRoomSchedulePdf(
     failedPages: pagesFailed,
     pageWarnings,
     confidenceThresholds,
-    roomCodes: [...new Set(rows.flatMap((row) => row.roomCode ? [row.roomCode] : []))],
-    courseCatalog: [...courseCatalog.values()],
+    roomCodes: [...new Set(resolvedRows.flatMap((row) => row.roomCode ? [row.roomCode] : []))],
+    courseCatalog: resolvedCourseCatalog,
     pages,
-    rows,
+    rows: resolvedRows,
   };
 }

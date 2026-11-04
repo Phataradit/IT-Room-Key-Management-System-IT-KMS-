@@ -5,6 +5,7 @@ import {
   Alert,
   Button,
   Card,
+  Checkbox,
   Descriptions,
   Drawer,
   Empty,
@@ -27,6 +28,8 @@ import {
   type UploadProps,
 } from "antd";
 import { PlusOutlined, UploadOutlined } from "@ant-design/icons";
+import { requiresTeacherConfirmation } from "@/lib/room-timetable/teacher-review.mjs";
+import { getImportBlockingProblems, isImportRowStructurallyReady } from "@/lib/room-timetable/import-readiness.mjs";
 
 type DayName = "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
 type RoomOption = { id: string; roomCode: string; roomName: string; building: string };
@@ -99,6 +102,8 @@ type ImportRow = {
   courseCode: string | null;
   subject: string | null;
   teacherName: string | null;
+  teacherNameCandidate: string | null;
+  teacherNameConfirmed: boolean;
   className: string | null;
   semester: string | null;
   academicYear: string | null;
@@ -120,7 +125,7 @@ type PreviewResult = {
   rows: ImportRow[];
   rooms: RoomOption[];
 };
-type ImportSummary = { imported: number; duplicates: number; failed: number; results: Array<{ sourcePage: number; status: string; message?: string }> };
+type ImportSummary = { imported: number; duplicates: number; failed: number; results: Array<{ sourcePage: number; sourceCellKey?: string; status: string; message?: string }> };
 type EditableRow = Omit<ImportRow, "id" | "duplicate" | "roomSource">;
 
 const days: Array<{ value: DayName; label: string }> = [
@@ -142,22 +147,12 @@ async function responseJson<T>(response: Response): Promise<T> {
   return body.data;
 }
 
-function rowProblems(row: ImportRow) {
-  const problems: string[] = [];
-  if (!row.roomId) problems.push("เลือกห้อง");
-  if (!row.dayOfWeek) problems.push("ตรวจวัน");
-  if (!row.startTime || !row.endTime) problems.push("ตรวจเวลา");
-  else if (row.startTime >= row.endTime) problems.push("ช่วงเวลาไม่ถูกต้อง");
-  if (row.effectiveFrom && row.effectiveTo && row.effectiveFrom > row.effectiveTo) problems.push("ช่วงวันที่ไม่ถูกต้อง");
-  return problems;
-}
-
 function editedFields(row: ImportRow) {
   const structured = row.sourceStructured;
   return ([
     ["courseCode", row.courseCode],
     ["subject", row.subject],
-    ["teacherName", row.teacherName],
+    ["teacherName", row.teacherNameConfirmed ? row.teacherName : row.teacherNameCandidate],
     ["className", row.className],
     ["dayOfWeek", row.dayOfWeek],
     ["startTime", row.startTime],
@@ -203,12 +198,14 @@ export function RoomScheduleImport({
     () => rooms.map((room) => ({ value: room.id, label: `${room.roomCode} · ${room.roomName}` })),
     [rooms],
   );
-  const validCount = rows.filter((row) => !row.duplicate && rowProblems(row).length === 0).length;
+  const validCount = rows.filter((row) => !row.duplicate && isImportRowStructurallyReady(row)).length;
   const selectedRows = rows.filter((row) => selectedKeys.includes(row.id));
+  const selectedImportableRows = selectedRows.filter(isImportRowStructurallyReady);
+  const selectedBlockedRows = selectedRows.filter((row) => !isImportRowStructurallyReady(row));
   const pageExtraction = preview?.pages.find((page) => page.page === pageToView) ?? null;
   const viewedCell = pageExtraction?.cells.find((cell) => cell.sourceCellKey === cellToView) ?? null;
   const reviewCount = rows.filter((row) =>
-    rowProblems(row).length > 0
+    getImportBlockingProblems(row).length > 0
     || row.duplicate
     || row.sourceConfidence === null
     || row.sourceConfidence < (preview?.confidenceThresholds.review ?? 50)
@@ -300,7 +297,7 @@ export function RoomScheduleImport({
       setPreview(result);
       setRows(initializedRows);
       setSelectedKeys(initializedRows
-        .filter((row) => !row.duplicate && rowProblems(row).length === 0)
+        .filter((row) => !row.duplicate && isImportRowStructurallyReady(row))
         .map((row) => row.id));
       setStage("REVIEW");
     } catch (error) {
@@ -325,7 +322,9 @@ export function RoomScheduleImport({
       endTime: row.endTime ?? "",
       courseCode: row.courseCode,
       subject: row.subject,
-      teacherName: row.teacherName,
+      teacherName: row.teacherNameConfirmed ? row.teacherName : row.teacherNameCandidate,
+      teacherNameCandidate: row.teacherNameCandidate,
+      teacherNameConfirmed: row.teacherNameConfirmed,
       className: row.className,
       semester: row.semester,
       academicYear: row.academicYear,
@@ -339,9 +338,14 @@ export function RoomScheduleImport({
     try {
       const values = await form.validateFields();
       const selectedRoom = rooms.find((room) => room.id === values.roomId);
+      const teacherNameConfirmed = Boolean(values.teacherNameConfirmed);
+      const editedTeacherName = values.teacherName?.trim() || null;
       setRows((current) => current.map((row) => row.id === editingRow.id ? {
         ...row,
         ...values,
+        teacherName: teacherNameConfirmed ? editedTeacherName : null,
+        teacherNameCandidate: teacherNameConfirmed ? null : editedTeacherName ?? editingRow.teacherNameCandidate,
+        teacherNameConfirmed,
         roomCode: selectedRoom?.roomCode ?? null,
         effectiveFrom: values.effectiveFrom || null,
         effectiveTo: values.effectiveTo || null,
@@ -354,6 +358,11 @@ export function RoomScheduleImport({
 
   const importSelected = async () => {
     if (!preview || !selectedRows.length) return;
+    if (!selectedImportableRows.length) {
+      const reasons = [...new Set(selectedBlockedRows.flatMap(getImportBlockingProblems))];
+      messageApi.error(`รายการที่เลือกยังนำเข้าไม่ได้: ${reasons.join(" · ") || "ตรวจสอบข้อมูลจำเป็น"}`);
+      return;
+    }
     setWorking(true);
     try {
       const response = await fetch("/api/room-timetable/import", {
@@ -367,14 +376,18 @@ export function RoomScheduleImport({
             pages: preview.pages,
             courseCatalog: preview.courseCatalog,
           },
-          rows: selectedRows.map((row) => ({
+          rows: selectedImportableRows.map((row) => ({
             sourcePage: row.sourcePage,
             sourceCellKey: row.sourceCellKey,
             sourceCellText: row.sourceCellText,
             sourceConfidence: row.sourceConfidence,
             sourceBounds: row.sourceBounds,
             sourceWords: row.sourceWords,
-            sourceStructured: row.sourceStructured,
+            sourceStructured: {
+              ...row.sourceStructured,
+              teacherNameCandidate: row.teacherNameCandidate,
+              teacherNameConfirmed: row.teacherNameConfirmed,
+            },
             sourceBuilding: row.sourceBuilding,
             roomId: row.roomId,
             dayOfWeek: row.dayOfWeek,
@@ -382,7 +395,9 @@ export function RoomScheduleImport({
             endTime: row.endTime,
             courseCode: row.courseCode,
             subject: row.subject,
-            teacherName: row.teacherName,
+            teacherName: row.teacherNameConfirmed ? row.teacherName : null,
+            teacherNameCandidate: row.teacherNameCandidate,
+            teacherNameConfirmed: row.teacherNameConfirmed,
             className: row.className,
             semester: row.semester,
             academicYear: row.academicYear,
@@ -392,7 +407,17 @@ export function RoomScheduleImport({
         }),
       });
       const result = await responseJson<ImportSummary>(response);
-      setSummary(result);
+      const skippedRows = selectedBlockedRows.map((row) => ({
+        sourcePage: row.sourcePage,
+        sourceCellKey: row.sourceCellKey,
+        status: "FAILED",
+        message: getImportBlockingProblems(row).join(" · "),
+      }));
+      setSummary({
+        ...result,
+        failed: result.failed + skippedRows.length,
+        results: [...result.results, ...skippedRows],
+      });
       setStage("RESULT");
       if (result.imported) onImported();
     } catch (error) {
@@ -422,7 +447,18 @@ export function RoomScheduleImport({
     },
     { title: "รหัสวิชา", dataIndex: "courseCode", width: 120, render: (value: string | null) => value ?? "—" },
     { title: "ชื่อวิชา", dataIndex: "subject", width: 180, render: (value: string | null) => value ?? "ไม่พบข้อมูล" },
-    { title: "ครูผู้สอน", dataIndex: "teacherName", width: 130, render: (value: string | null) => value ?? "ไม่พบข้อมูล" },
+    {
+      title: "ครูผู้สอน",
+      key: "teacherName",
+      width: 180,
+      render: (_, row) => (
+        <Space size={4} wrap>
+          <span>{row.teacherNameConfirmed ? row.teacherName ?? "ยืนยันว่าไม่มีชื่อ" : row.teacherNameCandidate ?? row.teacherName ?? "ไม่พบข้อมูล"}</span>
+          {requiresTeacherConfirmation(row) && <Tag color="gold">รอตรวจสอบ</Tag>}
+          {row.teacherNameConfirmed && <Tag color="green">ยืนยันแล้ว</Tag>}
+        </Space>
+      ),
+    },
     { title: "กลุ่มเรียน", dataIndex: "className", width: 115, render: (value: string | null) => value ?? "ไม่พบข้อมูล" },
     {
       title: "ผลตรวจ",
@@ -431,7 +467,7 @@ export function RoomScheduleImport({
       render: (_, row) => {
         const changes = editedFields(row);
         if (row.duplicate) return <Tag color="default">นำเข้าแล้ว</Tag>;
-        const problems = rowProblems(row);
+        const problems = getImportBlockingProblems(row);
         return (
           <Space wrap size={4}>
             {problems.length
@@ -555,6 +591,7 @@ export function RoomScheduleImport({
               <Descriptions.Item label="รายการ">{rows.length}</Descriptions.Item>
               <Descriptions.Item label="พร้อมนำเข้า">{validCount}</Descriptions.Item>
               <Descriptions.Item label="เลือกแล้ว">{selectedRows.length}</Descriptions.Item>
+              <Descriptions.Item label="ที่เลือกและพร้อมนำเข้า">{selectedImportableRows.length}</Descriptions.Item>
               <Descriptions.Item label="รายวิชาที่พบ">{new Set(rows.flatMap((row) => row.courseCode ? [row.courseCode] : [])).size}</Descriptions.Item>
               <Descriptions.Item label="มีกลุ่มเรียน">{rows.filter((row) => row.className).length}</Descriptions.Item>
               <Descriptions.Item label="มีชื่อครู">{rows.filter((row) => row.teacherName).length}</Descriptions.Item>
@@ -588,7 +625,7 @@ export function RoomScheduleImport({
                 selectedRowKeys: selectedKeys,
                 onChange: (keys) => setSelectedKeys(keys as string[]),
                 getCheckboxProps: (row) => ({
-                  disabled: row.duplicate || rowProblems(row).length > 0,
+                  disabled: row.duplicate,
                 }),
               }}
             />
@@ -648,9 +685,7 @@ export function RoomScheduleImport({
                       pagination={false}
                       columns={[
                         { title: "รหัสวิชา", dataIndex: "courseCode" },
-                        { title: "ข้อความต้นฉบับที่อยู่ใกล้รหัส", dataIndex: "sourceText" },
-                        { title: "ข้อความชื่อวิชาที่อ่านได้", dataIndex: "subject", render: (value: string | null) => value ?? "ยังระบุไม่ได้" },
-                        { title: "ความมั่นใจ", dataIndex: "confidence", render: (value: number | null) => value === null ? "ไม่มีคะแนน" : `${value}%` },
+                        { title: "ชื่อวิชาจากฐานข้อมูล", dataIndex: "subject", render: (value: string | null) => value ?? "ไม่พบรหัสวิชาในฐานข้อมูล" },
                       ]}
                     />
                   ),
@@ -684,7 +719,7 @@ export function RoomScheduleImport({
             </div>
             {summary.results.filter((result) => result.status !== "IMPORTED").length > 0 && (
               <Table
-                rowKey={(result) => `${result.sourcePage}:${result.status}:${result.message ?? ""}`}
+                rowKey={(result) => `${result.sourcePage}:${result.sourceCellKey ?? ""}:${result.status}:${result.message ?? ""}`}
                 size="small"
                 dataSource={summary.results.filter((result) => result.status !== "IMPORTED")}
                 columns={[
@@ -755,6 +790,18 @@ export function RoomScheduleImport({
               </Form.Item>
               <Form.Item name="teacherName" label="ครูผู้สอน (เว้นว่างหากไม่มีข้อมูล)">
                 <Input maxLength={200} />
+              </Form.Item>
+              {editingRow.teacherNameCandidate && !editingRow.teacherNameConfirmed && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="ข้อความ OCR ของชื่อครูยังไม่ใช่ข้อมูลที่ยืนยันแล้ว"
+                  description={editingRow.teacherNameCandidate}
+                  style={{ marginBottom: 16 }}
+                />
+              )}
+              <Form.Item name="teacherNameConfirmed" valuePropName="checked">
+                <Checkbox>ตรวจสอบข้อความ OCR แล้ว และยืนยันชื่อด้านบน (หรือยืนยันว่าไม่มีชื่อ)</Checkbox>
               </Form.Item>
               <Form.Item name="className" label="กลุ่มเรียน">
                 <Input maxLength={100} />

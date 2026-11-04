@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -100,35 +101,35 @@ enum NotificationPriority {
 }
 
 model User {
-  id               String              @id @default(cuid())
-  username         String              @unique
-  email            String              @unique
+  id               String               @id @default(cuid())
+  username         String               @unique
+  email            String               @unique
   passwordHash     String
   prefix           String?
   firstName        String
   lastName         String
-  studentId        String?             @unique
-  employeeId       String?             @unique
+  studentId        String?              @unique
+  employeeId       String?              @unique
   phone            String?
-  role             UserRole            @default(STUDENT)
+  role             UserRole             @default(STUDENT)
   department       String?
   classRoom        String?
   avatarUrl        String?
-  status           UserStatus          @default(ACTIVE)
+  status           UserStatus           @default(ACTIVE)
   lastLoginAt      DateTime?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
   deletedAt        DateTime?
-  borrows          BorrowTransaction[] @relation("Borrower")
-  approvals        BorrowTransaction[] @relation("Approver")
-  roomBookings     RoomBooking[]       @relation("BookingOwner")
-  approvedBookings RoomBooking[]       @relation("BookingApprover")
-  rejectedBookings RoomBooking[]       @relation("BookingRejecter")
-  returnedBookings RoomBooking[]       @relation("BookingReturnConfirmer")
+  borrows          BorrowTransaction[]  @relation("Borrower")
+  approvals        BorrowTransaction[]  @relation("Approver")
+  roomBookings     RoomBooking[]        @relation("BookingOwner")
+  approvedBookings RoomBooking[]        @relation("BookingApprover")
+  rejectedBookings RoomBooking[]        @relation("BookingRejecter")
+  returnedBookings RoomBooking[]        @relation("BookingReturnConfirmer")
   notifications    Notification[]
   auditLogs        AuditLog[]
   responsibleRooms RoomTeacher[]
-  taughtSchedules  RoomSchedule[]      @relation("ScheduleTeacher")
+  taughtSchedules  RoomSchedule[]       @relation("ScheduleTeacher")
   scheduleImports  RoomScheduleImport[]
 
   @@index([role, status])
@@ -192,6 +193,7 @@ model RoomSchedule {
   id               String                  @id @default(cuid())
   roomId           String
   teacherId        String?
+  courseId         String?
   dayOfWeek        DayOfWeek
   startTime        String
   endTime          String
@@ -220,6 +222,7 @@ model RoomSchedule {
   updatedAt        DateTime                @updatedAt
   room             Room                    @relation(fields: [roomId], references: [id], onDelete: Cascade)
   teacher          User?                   @relation("ScheduleTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  course           Course?                 @relation(fields: [courseId], references: [id], onDelete: SetNull)
   scheduleImport   RoomScheduleImport?     @relation(fields: [scheduleImportId], references: [id], onDelete: Restrict)
   exceptions       RoomScheduleException[]
 
@@ -229,6 +232,19 @@ model RoomSchedule {
   @@index([teacherId, status])
   @@index([effectiveFrom, effectiveTo])
   @@index([scheduleImportId])
+  @@index([courseId])
+}
+
+model Course {
+  id         String         @id @default(cuid())
+  courseCode String         @unique
+  courseName String
+  isActive   Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  schedules  RoomSchedule[]
+
+  @@index([isActive, courseName])
 }
 
 model RoomScheduleImport {
