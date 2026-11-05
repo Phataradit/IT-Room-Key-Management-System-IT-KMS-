@@ -4,7 +4,9 @@ import { useState, type FormEvent } from "react";
 import { getSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-export function LoginForm() {
+type LogoutStatus = "success" | "error" | "verify-error" | null;
+
+export function LoginForm({ logoutStatus }: { logoutStatus: LogoutStatus }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,7 +34,7 @@ export function LoginForm() {
     }
 
     const session = await getSession();
-    router.push(session?.user.role === "ADMIN" ? "/admin/dashboard" : "/dashboard");
+    router.push(session?.user?.role === "ADMIN" ? "/admin/dashboard" : "/dashboard");
     router.refresh();
   }
 
@@ -55,6 +57,19 @@ export function LoginForm() {
             <h2>เข้าสู่ระบบ</h2>
             <p>กรอกบัญชีผู้ใช้เพื่อดำเนินการต่อ</p>
           </div>
+          {logoutStatus === "success" && (
+            <p className="login-success" role="status">ออกจากระบบเรียบร้อยแล้ว</p>
+          )}
+          {logoutStatus === "error" && (
+            <p className="login-error" role="alert">
+              ยกเลิก Session แล้ว แต่ล้างข้อมูลเข้าสู่ระบบในเบราว์เซอร์ไม่สำเร็จ กรุณาลองเข้าสู่ระบบใหม่
+            </p>
+          )}
+          {logoutStatus === "verify-error" && (
+            <p className="login-error" role="alert">
+              ไม่สามารถตรวจสอบ Session ที่กู้คืนได้ กรุณาเข้าสู่ระบบอีกครั้ง
+            </p>
+          )}
           <form className="login-form" onSubmit={handleSubmit}>
             <label htmlFor="username">ชื่อผู้ใช้หรืออีเมล</label>
             <input

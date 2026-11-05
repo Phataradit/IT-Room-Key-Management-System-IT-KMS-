@@ -9,7 +9,7 @@ export const instant = false;
 export default async function NotificationsPage() {
   const user = await requireUser();
   return (
-    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} active="notifications">
+    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="notifications">
       <NotificationCenter isAdmin={user.role === UserRole.ADMIN} />
     </DashboardShell>
   );

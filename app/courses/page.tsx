@@ -8,7 +8,7 @@ export const instant = false;
 export default async function CoursesPage() {
   const user = await requireUser();
   return (
-    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} active="courses">
+    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="courses">
       <CourseSearch />
     </DashboardShell>
   );

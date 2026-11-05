@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
-import { BrowserMultiFormatReader } from "@zxing/browser";
+import { BrowserQRCodeReader } from "@zxing/browser";
 import type { IScannerControls } from "@zxing/browser";
 
 function readRoomToken(value: string) {
@@ -27,6 +27,7 @@ export function QrScanner() {
   useEffect(() => {
     let active = true;
     let controls: IScannerControls | undefined;
+    let stream: MediaStream | undefined;
     if (!window.isSecureContext || typeof navigator.mediaDevices?.getUserMedia !== "function") {
       void Promise.resolve().then(() => {
         if (!active) return;
@@ -37,35 +38,66 @@ export function QrScanner() {
       return;
     }
 
-    const reader = new BrowserMultiFormatReader();
-
-    reader.decodeFromVideoDevice(undefined, videoRef.current ?? undefined, (result, _decodeError, scannerControls) => {
-      controls = scannerControls;
-      if (!active || !result) return;
-
-      const token = readRoomToken(result.getText());
-      if (!token) {
-        setError("QR Code นี้ไม่ใช่รหัสห้อง IT-KMS กรุณาลองอีกครั้ง");
-        return;
-      }
-
-      active = false;
-      scannerControls.stop();
-      router.push(`/scan/${encodeURIComponent(token)}`);
-    }).then((scannerControls) => {
-      controls = scannerControls;
-      if (active) setIsStarting(false);
-      else scannerControls.stop();
-    }).catch((cause: unknown) => {
-      if (!active) return;
+    const video = videoRef.current;
+    if (!video) {
       setIsStarting(false);
       setCameraUnavailable(true);
-      setError(cause instanceof Error ? `เปิดกล้องไม่สำเร็จ: ${cause.message}` : "เปิดกล้องไม่สำเร็จ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง");
-    });
+      setError("ไม่พบพื้นที่แสดงภาพจากกล้อง กรุณาโหลดหน้าใหม่แล้วลองอีกครั้ง");
+      return;
+    }
+    const activeVideo = video;
+
+    async function startScanner() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: { ideal: "environment" } },
+        });
+        if (!active) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        const reader = new BrowserQRCodeReader();
+        controls = await reader.decodeFromStream(stream, activeVideo, (result, _decodeError, scannerControls) => {
+          controls = scannerControls;
+          if (!active || !result) return;
+
+          const token = readRoomToken(result.getText());
+          if (!token) {
+            setError("QR Code นี้ไม่ใช่รหัสห้อง IT-KMS กรุณาลองอีกครั้ง");
+            return;
+          }
+
+          active = false;
+          scannerControls.stop();
+          router.push(`/scan/${encodeURIComponent(token)}`);
+        });
+        if (active) setIsStarting(false);
+        else controls.stop();
+      } catch (cause: unknown) {
+        if (!active) return;
+        setIsStarting(false);
+        setCameraUnavailable(true);
+        if (cause instanceof DOMException && cause.name === "NotAllowedError") {
+          setError("ไม่ได้รับอนุญาตให้ใช้กล้อง กรุณาอนุญาตสิทธิ์กล้องในเบราว์เซอร์แล้วโหลดหน้าใหม่");
+        } else if (cause instanceof DOMException && cause.name === "NotFoundError") {
+          setError("ไม่พบกล้องบนอุปกรณ์นี้ กรุณาถ่ายภาพหรือเลือกรูป QR Code");
+        } else if (cause instanceof DOMException && cause.name === "NotReadableError") {
+          setError("กล้องกำลังถูกใช้งานโดยแอปอื่น กรุณาปิดแอปที่ใช้กล้องแล้วลองอีกครั้ง");
+        } else {
+          setError(cause instanceof Error ? `เปิดกล้องไม่สำเร็จ: ${cause.message}` : "เปิดกล้องไม่สำเร็จ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง");
+        }
+      }
+    }
+
+    void startScanner();
 
     return () => {
       active = false;
       controls?.stop();
+      stream?.getTracks().forEach((track) => track.stop());
+      if (activeVideo.srcObject === stream) activeVideo.srcObject = null;
     };
   }, [router]);
 
@@ -79,7 +111,7 @@ export function QrScanner() {
       const image = new Image();
       image.src = imageUrl;
       await image.decode();
-      const result = await new BrowserMultiFormatReader().decodeFromImageElement(image);
+      const result = await new BrowserQRCodeReader().decodeFromImageElement(image);
       const token = readRoomToken(result.getText());
       if (!token) {
         setError("QR Code นี้ไม่ใช่รหัสห้อง IT-KMS กรุณาลองอีกครั้ง");

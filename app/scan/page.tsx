@@ -8,7 +8,7 @@ export const instant = false;
 export default async function ScanPage() {
   const user = await requireUser();
   return (
-    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} active="scan">
+    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="scan">
       <div className="dashboard-content">
         <div className="welcome-row">
           <div>

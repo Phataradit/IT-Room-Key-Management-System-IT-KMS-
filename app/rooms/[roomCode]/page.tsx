@@ -59,7 +59,7 @@ export default async function RoomDetailPage({
   };
 
   return (
-    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} active="rooms">
+    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="rooms">
       <div className="dashboard-content">
         <div className="welcome-row">
           <div>

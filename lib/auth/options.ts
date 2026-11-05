@@ -2,7 +2,10 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db/prisma";
+
+const authSessionMaxAge = 30 * 24 * 60 * 60;
 
 const credentialsSchema = z.object({
   username: z.string().trim().min(1).max(254),
@@ -11,7 +14,7 @@ const credentialsSchema = z.object({
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: authSessionMaxAge },
   pages: { signIn: "/login" },
   providers: [
     CredentialsProvider({
@@ -128,16 +131,48 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        const sessionId = randomUUID();
+        await prisma.authSession.create({
+          data: {
+            id: sessionId,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + authSessionMaxAge * 1000),
+          },
+        });
         token.id = user.id;
         token.role = user.role;
+        token.sid = sessionId;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
+      if (!session.user) return session;
+
+      const sessionId = typeof token.sid === "string" ? token.sid : null;
+      const userId = typeof token.id === "string" ? token.id : null;
+      if (!sessionId || !userId) {
+        session.user = undefined;
+        return session;
       }
+
+      const activeSession = await prisma.authSession.findFirst({
+        where: {
+          id: sessionId,
+          userId,
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+          user: { is: { status: "ACTIVE", deletedAt: null } },
+        },
+        select: { id: true },
+      });
+      if (!activeSession) {
+        session.user = undefined;
+        return session;
+      }
+
+      session.user.id = userId;
+      session.user.role = token.role;
+      session.user.sessionId = sessionId;
       return session;
     },
   },

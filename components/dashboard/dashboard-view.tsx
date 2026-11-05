@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { UserRole } from "@prisma/client";
 import { ClockCircleOutlined, KeyOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 
@@ -13,11 +14,12 @@ const rooms = [
 type DashboardViewProps = {
   userName: string;
   roleLabel: string;
+  userRole: UserRole;
 };
 
-export function DashboardView({ userName, roleLabel }: DashboardViewProps) {
+export function DashboardView({ userName, roleLabel, userRole }: DashboardViewProps) {
   return (
-    <DashboardShell userName={userName} roleLabel={roleLabel} active="dashboard">
+    <DashboardShell userName={userName} roleLabel={roleLabel} userRole={userRole} active="dashboard">
       <div className="dashboard-content">
         <div className="welcome-row">
           <div>

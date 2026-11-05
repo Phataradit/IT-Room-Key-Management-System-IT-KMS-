@@ -5,8 +5,8 @@ import { getSemesterCalendar, saveSemesterCalendar, semesterCalendarSchema } fro
 export async function GET() {
   const actor = await getApiUser();
   if (!actor) return Response.json({ success: false, message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
-  if (actor.role !== "ADMIN") {
-    return Response.json({ success: false, message: "ไม่มีสิทธิ์จัดการปฏิทินภาคเรียน" }, { status: 403 });
+  if (actor.role !== "ADMIN" && actor.role !== "TEACHER") {
+    return Response.json({ success: false, message: "ไม่มีสิทธิ์ดูปฏิทินภาคเรียน" }, { status: 403 });
   }
   try {
     return Response.json({ success: true, data: await getSemesterCalendar() });

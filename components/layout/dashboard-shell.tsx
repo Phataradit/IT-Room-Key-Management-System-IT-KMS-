@@ -1,14 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   AppstoreOutlined,
+  BarChartOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
+  MenuOutlined,
   HomeOutlined,
   FileTextOutlined,
   QrcodeOutlined,
 } from "@ant-design/icons";
+import { Drawer } from "antd";
+import type { UserRole } from "@prisma/client";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SignOutButton } from "@/components/layout/sign-out-button";
 
@@ -16,10 +21,11 @@ type DashboardShellProps = {
   children: React.ReactNode;
   userName: string;
   roleLabel: string;
+  userRole: UserRole;
   active: string;
 };
 
-const navigation = [
+const baseNavigation = [
   { href: "/dashboard", label: "หน้าหลัก", icon: <HomeOutlined />, key: "dashboard" },
   { href: "/rooms", label: "ห้องทั้งหมด", icon: <AppstoreOutlined />, key: "rooms" },
   { href: "/room-timetable", label: "ตารางประจำห้อง", icon: <CalendarOutlined />, key: "room-timetable" },
@@ -28,7 +34,41 @@ const navigation = [
   { href: "/history", label: "ประวัติการยืม", icon: <ClockCircleOutlined />, key: "history" },
 ];
 
-export function DashboardShell({ children, userName, roleLabel, active }: DashboardShellProps) {
+const statisticsNavigationItem = {
+  href: "/statistics",
+  label: "สถิติ",
+  icon: <BarChartOutlined />,
+  key: "statistics",
+};
+
+export function DashboardShell({ children, userName, roleLabel, userRole, active }: DashboardShellProps) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigation = userRole === "ADMIN" || userRole === "TEACHER"
+    ? [baseNavigation[0], statisticsNavigationItem, ...baseNavigation.slice(1)]
+    : baseNavigation;
+
+  useEffect(() => {
+    function handlePageShow(event: PageTransitionEvent) {
+      if (!event.persisted) return;
+
+      document.documentElement.dataset.authCheck = "pending";
+      void fetch("/api/auth/session", { cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error("Could not verify the restored session");
+          const session = await response.json();
+          if (!session?.user?.id) {
+            window.location.replace("/login");
+            return;
+          }
+          delete document.documentElement.dataset.authCheck;
+        })
+        .catch(() => window.location.replace("/login?logout=verify-error"));
+    }
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -62,17 +102,47 @@ export function DashboardShell({ children, userName, roleLabel, active }: Dashbo
               <div className="user-meta"><strong>{userName}</strong><span>{roleLabel}</span></div>
               <SignOutButton />
             </div>
+            <button
+              className="mobile-menu-toggle"
+              type="button"
+              aria-label="เปิดเมนู"
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <MenuOutlined />
+            </button>
           </div>
         </header>
         <main>{children}</main>
-        <nav className="mobile-nav" aria-label="เมนูมือถือ">
-          <Link href="/dashboard" className={active === "dashboard" ? "active" : ""}><HomeOutlined /><span>หน้าหลัก</span></Link>
-          <Link href="/rooms" className={active === "rooms" ? "active" : ""}><AppstoreOutlined /><span>ห้อง</span></Link>
-          <Link href="/room-timetable" className={active === "room-timetable" ? "active" : ""}><CalendarOutlined /><span>ตาราง</span></Link>
-          <Link href="/scan" className="mobile-scan"><QrcodeOutlined /><span>สแกน</span></Link>
-          <Link href="/borrowings" className={active === "borrowings" ? "active" : ""}><FileTextOutlined /><span>จอง</span></Link>
-          <Link href="/history" className={active === "history" ? "active" : ""}><ClockCircleOutlined /><span>ประวัติ</span></Link>
-        </nav>
+        <Drawer
+          title="เมนู IT-KMS"
+          placement="left"
+          width="min(88vw, 360px)"
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          className="mobile-menu-drawer"
+        >
+          <div className="mobile-drawer-user">
+            <div className="avatar">{userName.charAt(0)}</div>
+            <div className="user-meta">
+              <strong>{userName}</strong>
+              <span>{roleLabel}</span>
+            </div>
+          </div>
+          <nav className="mobile-drawer-nav" aria-label="เมนูหลัก">
+            {navigation.map((item) => (
+              <Link
+                className={`mobile-drawer-link ${active === item.key ? "active" : ""}`}
+                href={item.href}
+                key={item.key}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {item.icon}<span>{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+          <SignOutButton />
+        </Drawer>
       </div>
     </div>
   );

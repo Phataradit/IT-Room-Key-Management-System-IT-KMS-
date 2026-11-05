@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import type { DashboardPeriod, SemesterCalendarEntry } from "@/lib/dashboard/statistics.mjs";
+import type { UserRole } from "@prisma/client";
 
 type DashboardData = {
   range: { period: DashboardPeriod; label: string; startDay: string; endDay: string };
@@ -64,7 +65,12 @@ async function readApiResponse<T>(response: Response): Promise<T> {
   return result.data;
 }
 
-export function AdminDashboardView({ userName }: { userName: string }) {
+export function StatisticsView({ userName, userRole, roleLabel }: {
+  userName: string;
+  userRole: UserRole;
+  roleLabel: string;
+}) {
+  const canManageCalendar = userRole === "ADMIN";
   const [period, setPeriod] = useState<DashboardPeriod>("month");
   const [date, setDate] = useState(currentBangkokDate());
   const [month, setMonth] = useState(currentBangkokDate().slice(0, 7));
@@ -77,6 +83,8 @@ export function AdminDashboardView({ userName }: { userName: string }) {
   const [loadedRequest, setLoadedRequest] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState("");
+  const printRequestPending = useRef(false);
+  const [authorizingPrint, setAuthorizingPrint] = useState(false);
   const [calendarMessage, setCalendarMessage] = useState("");
   const [savingCalendar, setSavingCalendar] = useState(false);
   const [newYear, setNewYear] = useState(String(Number(currentBangkokDate().slice(0, 4)) + 543));
@@ -140,6 +148,17 @@ export function AdminDashboardView({ userName }: { userName: string }) {
     return () => controller.abort();
   }, [query, requestKey]);
 
+  useEffect(() => {
+    if (!printRequestPending.current || !data || loading) return;
+    printRequestPending.current = false;
+    const previousTitle = document.title;
+    document.title = `IT-KMS-Statistics-${periodLabels[period]}-${data.range.startDay}`;
+    window.addEventListener("afterprint", () => {
+      document.title = previousTitle;
+    }, { once: true });
+    window.print();
+  }, [data, loading, period]);
+
   const availableYears = useMemo(
     () => [...new Set(calendar.map((entry) => entry.academicYear))].sort((a, b) => b - a),
     [calendar],
@@ -194,29 +213,36 @@ export function AdminDashboardView({ userName }: { userName: string }) {
     }
   }
 
-  function printReport() {
-    if (!data) return;
-    const previousTitle = document.title;
-    const fileDate = data.range.startDay;
-    document.title = `IT-KMS-${periodLabels[period]}-${fileDate}`;
-    window.addEventListener("afterprint", () => {
-      document.title = previousTitle;
-    }, { once: true });
-    window.print();
+  async function printReport() {
+    if (!data || loading) return;
+    setAuthorizingPrint(true);
+    setError("");
+    try {
+      const currentData = await readApiResponse<DashboardData>(
+        await fetch(`/api/admin/dashboard/statistics?${query}`, { cache: "no-store" }),
+      );
+      setData(currentData);
+      printRequestPending.current = true;
+    } catch (printError) {
+      setError(printError instanceof Error ? printError.message : "ไม่สามารถตรวจสอบสิทธิ์เพื่อออกรายงานได้");
+    } finally {
+      setAuthorizingPrint(false);
+    }
   }
 
   return (
-    <DashboardShell userName={userName} roleLabel="ผู้ดูแลระบบ" active="dashboard">
+    <DashboardShell userName={userName} roleLabel={roleLabel} userRole={userRole} active="statistics">
       <div className="admin-dashboard-page">
         <div className="dashboard-content">
           <div className="welcome-row">
             <div>
               <p className="eyebrow">IT-KMS · สถิติจากฐานข้อมูลจริง</p>
-              <h1>Dashboard ภาพรวม</h1>
+              <h1>สถิติการใช้งานห้องเรียน</h1>
+              <p className="welcome-subtitle">ภาพรวมและการวิเคราะห์ข้อมูลการใช้งานระบบ IT-KMS</p>
               <p className="welcome-subtitle">นิยามใช้งานสำเร็จ = คืนห้องแล้วเท่านั้น รายการยกเลิกและปฏิเสธไม่นับเป็นการใช้สำเร็จ</p>
             </div>
-            <button type="button" className="admin-report-button" onClick={printReport} disabled={!data || loading}>
-              พิมพ์ / บันทึก PDF
+            <button type="button" className="admin-report-button" onClick={() => void printReport()} disabled={!data || loading || authorizingPrint}>
+              {authorizingPrint ? "กำลังตรวจสอบสิทธิ์..." : "พิมพ์ / บันทึก PDF"}
             </button>
           </div>
 
@@ -256,7 +282,13 @@ export function AdminDashboardView({ userName }: { userName: string }) {
                     ))}
                   </select>
                 </label>
-                {calendarLoaded && availableTerms.length === 0 && <span className="admin-calendar-hint">ตั้งค่าปฏิทินภาคเรียนด้านล่างก่อนดูรายงาน</span>}
+                {calendarLoaded && availableTerms.length === 0 && (
+                  <span className="admin-calendar-hint">
+                    {canManageCalendar
+                      ? "ตั้งค่าปฏิทินภาคเรียนด้านล่างก่อนดูรายงาน"
+                      : "ยังไม่มีปฏิทินภาคเรียน โปรดติดต่อผู้ดูแลระบบ"}
+                  </span>
+                )}
               </>
             )}
             <span className="admin-data-status" role="status">{loading ? "กำลังโหลดข้อมูล..." : data?.range.label}</span>
@@ -265,7 +297,7 @@ export function AdminDashboardView({ userName }: { userName: string }) {
           {error && <p className="admin-dashboard-error" role="alert">{error}</p>}
 
           {data && (
-            <div className="dashboard-print-report" id="dashboard-print-report">
+            <div className="dashboard-print-report" id="statistics-print-report">
               <div className="dashboard-print-heading">
                 <h2>รายงานสถิติการใช้งานห้อง IT-KMS</h2>
                 <p>ช่วงเวลา: {data.range.label} ({data.range.startDay} ถึงก่อน {data.range.endDay})</p>
@@ -390,7 +422,7 @@ export function AdminDashboardView({ userName }: { userName: string }) {
             </div>
           )}
 
-          <details className="admin-calendar-settings">
+          {canManageCalendar && <details className="admin-calendar-settings">
             <summary>ตั้งค่าปฏิทินภาคเรียน</summary>
             <p>กำหนดวันเริ่มต้นและวันสิ้นสุดจริงของแต่ละภาคเรียน รายงานจะรวมข้อมูลตั้งแต่วันเริ่มต้นถึงวันสิ้นสุดที่กำหนด</p>
             {calendarMessage && <p className={calendarMessage.includes("บันทึก") ? "admin-calendar-success" : "admin-dashboard-error"} role="status">{calendarMessage}</p>}
@@ -414,7 +446,7 @@ export function AdminDashboardView({ userName }: { userName: string }) {
             <button type="button" className="admin-report-button" onClick={() => void saveCalendar()} disabled={savingCalendar}>
               {savingCalendar ? "กำลังบันทึก..." : "บันทึกปฏิทิน"}
             </button>
-          </details>
+          </details>}
         </div>
       </div>
     </DashboardShell>

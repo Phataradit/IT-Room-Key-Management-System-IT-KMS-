@@ -15,7 +15,7 @@ export default async function HistoryPage() {
   });
 
   return (
-    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} active="history">
+    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="history">
       <div className="dashboard-content">
         <div className="welcome-row">
           <div>

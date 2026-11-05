@@ -131,9 +131,21 @@ model User {
   responsibleRooms RoomTeacher[]
   taughtSchedules  RoomSchedule[]       @relation("ScheduleTeacher")
   scheduleImports  RoomScheduleImport[]
+  authSessions     AuthSession[]
 
   @@index([role, status])
   @@index([lastName, firstName])
+}
+
+model AuthSession {
+  id        String    @id
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
 }
 
 model Room {

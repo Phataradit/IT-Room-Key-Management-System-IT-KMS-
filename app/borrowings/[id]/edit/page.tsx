@@ -30,7 +30,7 @@ export default async function EditBorrowingPage({
   });
 
   return (
-    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} active="borrowings">
+    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="borrowings">
       <div className="dashboard-content">
         <div className="welcome-row">
           <div>

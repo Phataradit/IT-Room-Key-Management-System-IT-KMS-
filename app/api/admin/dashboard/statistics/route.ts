@@ -14,7 +14,7 @@ const querySchema = z.object({
 export async function GET(request: Request) {
   const actor = await getApiUser();
   if (!actor) return Response.json({ success: false, message: "กรุณาเข้าสู่ระบบ" }, { status: 401 });
-  if (actor.role !== "ADMIN") {
+  if (actor.role !== "ADMIN" && actor.role !== "TEACHER") {
     return Response.json({ success: false, message: "ไม่มีสิทธิ์ดูสถิติภาพรวม" }, { status: 403 });
   }
 

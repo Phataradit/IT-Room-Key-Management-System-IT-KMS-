@@ -22,7 +22,7 @@ export default async function ScannedRoomPage({
   const isUnavailable = room.status === "DISABLED" || room.status === "MAINTENANCE";
 
   return (
-    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} active="scan">
+    <DashboardShell userName={user.name ?? "ผู้ใช้งาน"} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="scan">
       <div className="dashboard-content">
         <div className="welcome-row">
           <div>

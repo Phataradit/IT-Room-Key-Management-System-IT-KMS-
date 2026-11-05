@@ -10,7 +10,7 @@ export default async function RoomTimetablePage() {
   const user = await requireUser();
   const initialWeekStart = mondayOfWeek(bangkokDateStamp(new Date()));
   return (
-    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} active="room-timetable">
+    <DashboardShell userName={user.name} roleLabel={getRoleLabel(user.role)} userRole={user.role} active="room-timetable">
       <RoomTimetableView actorRole={user.role} initialWeekStart={initialWeekStart} />
     </DashboardShell>
   );
