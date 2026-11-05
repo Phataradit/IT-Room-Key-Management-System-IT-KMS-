@@ -2,12 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 import { getSession, signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 type LogoutStatus = "success" | "error" | "verify-error" | null;
 
 export function LoginForm({ logoutStatus }: { logoutStatus: LogoutStatus }) {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -16,26 +14,32 @@ export function LoginForm({ logoutStatus }: { logoutStatus: LogoutStatus }) {
     setError("");
     setLoading(true);
 
-    const formData = new FormData(event.currentTarget);
-    const result = await signIn("credentials", {
-      username: formData.get("username"),
-      password: formData.get("password"),
-      redirect: false,
-    });
+    try {
+      const formData = new FormData(event.currentTarget);
+      const result = await signIn("credentials", {
+        username: formData.get("username"),
+        password: formData.get("password"),
+        redirect: false,
+      });
 
-    setLoading(false);
-    if (!result || result.error) {
-      if (result?.error === "DatabaseError") {
-        setError("ระบบไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
-      } else {
-        setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง หรือบัญชีถูกระงับ");
+      if (!result || result.error) {
+        setLoading(false);
+        if (result?.error === "DatabaseError") {
+          setError("ระบบไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+        } else {
+          setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง หรือบัญชีถูกระงับ");
+        }
+        return;
       }
-      return;
-    }
 
-    const session = await getSession();
-    router.push(session?.user?.role === "ADMIN" ? "/admin/dashboard" : "/dashboard");
-    router.refresh();
+      const session = await getSession();
+      const targetUrl = session?.user?.role === "ADMIN" ? "/admin/dashboard" : "/dashboard";
+      window.location.href = targetUrl;
+    } catch (err) {
+      console.error("Login unexpected error:", err);
+      setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง");
+      setLoading(false);
+    }
   }
 
   return (
